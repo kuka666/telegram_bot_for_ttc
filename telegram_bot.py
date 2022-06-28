@@ -287,6 +287,20 @@ def get_dengi(message):
     # print(user_data)
     get_magazin(message)
 
+
+def add_mel(message):
+    count = message.text
+    if(int(user_data['meloman_count']) >= int(count)):
+        price = int(count)*5000
+        user_data['balans'] = str(int(user_data['balans']) + price)
+        user_data['meloman_count'] = user_data['meloman_count'] - int(count)
+        bot.send_message(message.chat.id, "Успешно")
+        get_korzina(message)
+    else:
+        bot.send_message(message.chat.id, "Не удалось!")
+        get_korzina(message)
+
+
 def add_mar(message):
     count = message.text
     if(int(user_data['marwin_count']) >= int(count)):
@@ -299,18 +313,21 @@ def add_mar(message):
         bot.send_message(message.chat.id, "Не удалось!")
         get_korzina(message)
 
+
 def add_lcwai(message):
     count = message.text
     if(int(user_data['lcwaikiki_count']) >= int(count)):
         price = int(count)*5000
         user_data['balans'] = str(int(user_data['balans']) + price)
-        user_data['lcwaikiki_count'] = user_data['lcwaikiki_count'] - int(count)
+        user_data['lcwaikiki_count'] = user_data['lcwaikiki_count'] - \
+            int(count)
         bot.send_message(message.chat.id, "Успешно")
         get_korzina(message)
     else:
         bot.send_message(message.chat.id, "Не удалось!")
         get_korzina(message)
-    
+
+
 def add_balans(message):
     global dengi
     dengi = message.text
@@ -335,7 +352,7 @@ def get_sogl(message):
         # 2. Update json object
         data.append(user_data)
         # 3. Write json file
-        with open('result.json', "w",encoding='utf8') as file:
+        with open('result.json', "w", encoding='utf8') as file:
             file.write(json.dumps(data, ensure_ascii=False))
         user_data['iin'] = ''
         user_data['fio'] = ''
