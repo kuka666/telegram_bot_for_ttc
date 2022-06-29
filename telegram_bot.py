@@ -2,6 +2,7 @@ from datetime import date
 from email import message
 from itertools import count
 from re import L
+import re
 from time import sleep
 import telebot
 import math
@@ -29,7 +30,7 @@ user_data = {
 @bot.message_handler(commands=['start'])
 def lang(message):
     bot.send_message(message.from_user.id,
-                     "Добро Пожаловать!\nҚош келдіңіз!\nWelcome!", parse_mode= 'Markdown')
+                     "Добро Пожаловать!\nҚош келдіңіз!\nWelcome!", parse_mode='Markdown')
     bot.send_photo(message.from_user.id,
                    photo=open('img/ttc.jpg', 'rb'))
     keyboard = telebot.types.InlineKeyboardMarkup()
@@ -132,9 +133,8 @@ def get_all_data(message):
     if(a <= 0):
         bot.send_message(
             message.from_user.id, listUndefinedIIN[langNumber1[0]])
-        bot.send_message(message.from_user.id,
-                         listGoodBye[langNumber1[0]]+'\U0001F44B')
         user_data_clear()
+        repeat_start(message)
     if(c > 0):
         bot.send_message(
             message.from_user.id, listChoosed[langNumber1[0]])
@@ -142,15 +142,17 @@ def get_all_data(message):
         mar = user_data['marwin_count'] * 5000
         lc = user_data['lcwaikiki_count'] * 5000
         bot.send_message(message.chat.id, 'Корзина'+'\U0001F5D1'+'\n' +
-                         listBalans[langNumber1[0]] + ':' + str(user_data['balans']) + 'тг\n' +
+                         listBalans[langNumber1[0]] + ':' + change_number_to_emoji(str(user_data['balans'])) + 'тг\n' +
                          listMoney[langNumber1[0]] + ':' +
-                         str(user_data['dengi']) + 'тг'+'\U0001F4B0'
-                         '\nМеломан сертификаты:' + str(user_data['meloman_count']) + ' ' + listCount[langNumber1[0]] + listNaSummu[langNumber1[0]] + ' ' + str(mel) +
-                         'тг\nMarwin сертификаты:' + str(user_data['marwin_count']) + ' ' + listCount[langNumber1[0]] + listNaSummu[langNumber1[0]] + ' ' + str(mar) +
-                         'тг\nLCWaikiki сертификаты:' + str(user_data['lcwaikiki_count']) + ' ' + listCount[langNumber1[0]] + listNaSummu[langNumber1[0]] + ' ' + str(lc)+'тг')
+                         change_number_to_emoji(str(user_data['dengi'])) + 'тг'+
+                         '\nМеломан сертификаты:' + change_number_to_emoji(str(user_data['meloman_count'])) + ' ' + listCount[langNumber1[0]] + listNaSummu[langNumber1[0]] + ' ' + change_number_to_emoji(str(mel)) +
+                         'тг\nMarwin сертификаты:' + change_number_to_emoji(str(user_data['marwin_count'])) + ' ' + listCount[langNumber1[0]] + listNaSummu[langNumber1[0]] + ' ' + change_number_to_emoji(str(mar)) +
+                         'тг\nLCWaikiki сертификаты:' + change_number_to_emoji(str(user_data['lcwaikiki_count'])) + ' ' + listCount[langNumber1[0]] + listNaSummu[langNumber1[0]] + ' ' + change_number_to_emoji(str(lc))+'тг')
         user_data_clear()
-        bot.send_message(message.from_user.id,
-                         listGoodBye[langNumber1[0]]+'\U0001F44B')
+        repeat_start(message)
+
+        
+        
 
 
 def get_cart(message):
@@ -163,7 +165,7 @@ def get_cart(message):
         text=listVyhod[langNumber1[0]]+'\U0001F6AA', callback_data='vyhod')
     keyboard.add(callback_button1, callback_button2, callback_button3)
     bot.send_message(message.chat.id, listCart[langNumber1[0]] +
-                     str(user_data['balans'])+'\n', reply_markup=keyboard)
+                    change_number_to_emoji(str(user_data['balans']))+'тг\n', reply_markup=keyboard)
 
 
 def get_magazin(message):
@@ -191,12 +193,12 @@ def get_korzina(message):
     mar = user_data['marwin_count'] * 5000
     lc = user_data['lcwaikiki_count'] * 5000
     bot.send_message(message.chat.id, 'Корзина'+'\U0001F5D1'+'\n' +
-                     listBalans[langNumber1[0]] + ':' + str(user_data['balans']) + 'тг\n' +
+                     listBalans[langNumber1[0]] + ':' + change_number_to_emoji(str(user_data['balans'])) + 'тг\n' +
                      listMoney[langNumber1[0]] + ':' +
-                     str(user_data['dengi']) + 'тг'+'\U0001F4B0'
-                     '\nМеломан сертификаты:' + str(user_data['meloman_count']) + ' ' + listCount[langNumber1[0]] + listNaSummu[langNumber1[0]] + ' ' + str(mel) +
-                     'тг\nMarwin сертификаты:' + str(user_data['marwin_count']) + ' ' + listCount[langNumber1[0]] + listNaSummu[langNumber1[0]] + ' ' + str(mar) +
-                     'тг\nLCWaikiki сертификаты:' + str(user_data['lcwaikiki_count']) + ' ' + listCount[langNumber1[0]] + listNaSummu[langNumber1[0]] + ' ' + str(lc)+'тг', reply_markup=keyboard)
+                     change_number_to_emoji(str(user_data['dengi'])) + 'тг'+'\U0001F4B0'
+                     '\nМеломан сертификаты:' + change_number_to_emoji(str(user_data['meloman_count'])) + ' ' + listCount[langNumber1[0]] + listNaSummu[langNumber1[0]] + ' ' + change_number_to_emoji(str(mel)) +
+                     'тг\nMarwin сертификаты:' + change_number_to_emoji(str(user_data['marwin_count'])) + ' ' + listCount[langNumber1[0]] + listNaSummu[langNumber1[0]] + ' ' + change_number_to_emoji(str(mar)) +
+                     'тг\nLCWaikiki сертификаты:' + change_number_to_emoji(str(user_data['lcwaikiki_count'])) + ' ' + listCount[langNumber1[0]] + listNaSummu[langNumber1[0]] + ' ' + change_number_to_emoji(str(lc))+'тг', reply_markup=keyboard)
 
 
 def get_delete(message):
@@ -228,7 +230,7 @@ def callbackLang(call):
                 elif call.data == "k":
                     langNumber1[0] = 1
 
-                print(langNumber1[0], listLang[langNumber1[0]])
+                # print(langNumber1[0], listLang[langNumber1[0]])
                 bot.edit_message_text(
                     chat_id=call.message.chat.id, message_id=call.message.message_id, text=listLangDef[langNumber1[0]])
                 bot.send_message(call.message.chat.id,
@@ -248,8 +250,6 @@ def callbackLang(call):
                 elif call.data == 'i':
                     b = get_count()
                     user_data['balans'] = b
-                    bot.send_message(call.message.chat.id,
-                                     listBalans[langNumber1[0]])
                     # print(user_data)
                     get_cart(call.message)
                 elif call.data == 'j':
@@ -261,9 +261,8 @@ def callbackLang(call):
                 elif call.data == 'magazin':
                     get_magazin(call.message)
                 elif call.data == 'vyhod':
-                    bot.send_message(call.message.chat.id,
-                                     listGoodBye[langNumber1[0]]+'\U0001F44B')
                     user_data_clear()
+                    repeat_start(call.message)
             elif call.data == "dengi" or call.data == "sertificaty" or call.data == "nazad":
                 if call.data == 'dengi':
                     bot.send_message(call.message.chat.id,
@@ -326,9 +325,35 @@ def callbackLang(call):
                                      listReturnLCWaikiki[langNumber1[0]])
                     bot.register_next_step_handler(
                         call.message, add_lcwai)
+            elif call.data == "plus" or call.data == "minus":
+                if call.data == 'plus':
+                    bot.edit_message_text(
+                        chat_id=call.message.chat.id, message_id=call.message.message_id, text=add_plus)
+                elif call.data == 'minus':
+                    bot.send_message(call.message.chat.id,
+                                     listWhatDelete[langNumber1[0]])
+                    get_delete(call.message)
 
         except Exception as ex:
             print(ex)
+def repeat_start(message):
+    keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+    callback_button1 = telebot.types.KeyboardButton('Старт')
+    keyboard.add(callback_button1)
+    bot.send_message(message.chat.id, listGoodBye[langNumber1[0]]+'\U0001F44B', reply_markup=keyboard)
+
+@bot.message_handler(content_types='text')
+def message_reply(message):
+    if message.text == "Старт":
+        lang(message)
+def add_plus(message):
+    global res
+    res = message.text
+    a = re.sub("[0-9]", "", res)
+    b = "".join(c for c in res if  c.isdecimal())
+    b = str(int(b)+1)
+    bot.edit_message_text(
+                    chat_id=message.chat.id, message_id=message.message_id, text= a + b)
 
 
 def get_dengi(message):
@@ -414,7 +439,7 @@ def get_sogl(message):
     if(sogl.lower() == 'соглашаюсь' or sogl.lower() == 'келісемін'):
         bot.send_message(
             message.chat.id, listGoodByeSuccess[langNumber1[0]]+'\U0001F44B')
-        print(user_data)
+        # print(user_data)
         with open('result.json', encoding='utf-8') as file:
             data = json.load(file)
         # 2. Update json object
@@ -423,7 +448,7 @@ def get_sogl(message):
         with open('result.json', "w", encoding='utf8') as file:
             file.write(json.dumps(data, ensure_ascii=False))
         user_data_clear()
-        print(user_data)
+        # print(user_data)
     else:
         bot.send_message(
             message.chat.id, listUnSuccess[langNumber1[0]]+'\U0001F614')
@@ -436,7 +461,7 @@ def get_meloman_sert(message):
     try:
         if(type(int(count)) == int):
             price = int(count) * 5000
-            print(price)
+            # print(price)
             result = int(user_data['balans'])-int(price)
             if(result >= 0):
                 user_data['balans'] = str(result)
@@ -464,7 +489,7 @@ def get_marwin_sert(message):
     try:
         if(type(int(count)) == int):
             price = int(count) * 5000
-            print(price)
+            # print(price)
             result = int(user_data['balans'])-int(price)
             if(result >= 0):
                 user_data['balans'] = str(result)
@@ -490,7 +515,7 @@ def get_lcwaikiki_sert(message):
     try:
         if(type(int(count)) == int):
             price = int(count) * 5000
-            print(price)
+            # print(price)
             result = int(user_data['balans'])-int(price)
             if(result >= 0):
                 user_data['balans'] = str(result)
@@ -561,7 +586,6 @@ def user_data_clear():
     return user_data
 
 
-
 langNumber = langNumber1[0]
 listLang = ['Русский язык', 'Қазақ тілі']
 listLangDef = ['Вы выбрали:', 'Сіз таңдадыңыз:']
@@ -610,8 +634,9 @@ listUnSuccess = ['Не удалось!', 'Сәтсіз!']
 listGoodByeSuccess = ['Успешно! До свидания!', 'Сәтті! Қош сау болыңыз!']
 listDontUnderstand = ['Я вас не понял напишите еще раз',
                       'Мен сізді түсінбедім қайта жазыңыз']
-listCertificateEach = ['Сертификаты\nОдин сертификат стоит 5000тг',
-                       'Сертификаттар\nБір сертификат құны 5000тг']
+cerKz = 'Сертификаттар\nБір сертификаттын құны ' + change_number_to_emoji('5000') + 'тг'
+cerRu = 'Сертификаты\nОдин сертификат стоит ' + change_number_to_emoji('5000') + 'тг'
+listCertificateEach = [cerRu,cerKz]
 listUndefinedIIN = ['Не нашли такой ИИН', 'Мұндай ИИН табылмады']
 listChoosed = ['Вы уже сделали выбор', 'Сіз таңдау жасадыңыз']
 bot.polling(none_stop=False)

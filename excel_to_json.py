@@ -1,3 +1,4 @@
+import re
 import pandas
 import json
 from datetime import date
@@ -40,10 +41,10 @@ from datetime import date
 # # 3. Write json file
 # with open('result.json', "w",encoding='utf8') as file:
 #     file.write(json.dumps(data, ensure_ascii=False))
-with open('result.json', encoding='utf-8') as res:
-    check = json.load(res)
+# with open('result.json', encoding='utf-8') as res:
+#     check = json.load(res)
 
-print(check[0])
+# print(check[0])
 
 
 def change_number_to_emoji(word):
@@ -83,5 +84,10 @@ def change_number_to_emoji(word):
     result =''.join(new_strings)
     return(result)
 
-
-print(change_number_to_emoji('1212'))
+def add_plus(kuka):
+    global res
+    res = kuka
+    a = re.sub("[0-9]", "", res)
+    b = "".join(c for c in res if  c.isdecimal())
+    b = str(int(b)+1)
+    print(a, b)
