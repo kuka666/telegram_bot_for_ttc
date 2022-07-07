@@ -1,9 +1,9 @@
 import re
-import pandas
+import pandas as pd
 import json
 from datetime import date
-
-
+import excel2json
+from conversiontools import ConversionClient
 # def between_date_day(from_date, to_date):
 #     from_date = from_date.split(".")
 #     to_date = to_date.split(".")
@@ -91,3 +91,50 @@ def add_plus(kuka):
     b = "".join(c for c in res if  c.isdecimal())
     b = str(int(b)+1)
     print(a, b)
+# def save_data(user_data):
+#     with open('result.json', encoding='utf-8') as file:
+#         data = json.load(file)
+#     minimal = 0     
+#     for txt in data:
+#         if txt['phone_number'] == user_data['phone_number']:
+#             data.pop(minimal)
+#         else:
+#             None
+#         minimal = minimal + 1
+#     data.append(user_data)
+#     with open('result.json', "w", encoding='utf8') as file:
+#         file.write(json.dumps(data, ensure_ascii=False))
+# df_json = pd.read_json('all.json')
+# df_json.to_excel('all.xlsx')
+
+# def get_saved_person_for_excel():
+#     with open('result.json', encoding='utf-8') as file:
+#         data = json.load(file)
+#     for i in data:
+#         if i['save'] == True and i['sended'] == False:
+#             result = {
+#                 'ФИО Сотрудника': i['fio'],
+#                 'ИИН Сотрудника': i['iin'],
+#                 'Число детей': i['count_deti'],
+#                 'Информация о Ребенке': i['comment'],
+#                 'Денежная компенсация': i['dengi'],
+#                 'Спортмастер сертификаты': i['sportmaster_count'],
+#                 'Mechta сертификаты': i['mechta_count'],
+#                 'LC Waikiki сертификаты': i['lcwaikiki_count']
+#             }
+#     with open('all.json', encoding='utf-8') as files:
+#         data = json.load(files)    
+#     data.append(result)
+#     with open('all.json', "w", encoding='utf8') as f:
+#         f.write(json.dumps(data, ensure_ascii=False))
+
+#     df_json = pd.read_json('all.json')
+#     df_json.to_excel('all.xlsx')
+
+# get_saved_person_for_excel()
+
+# client = ConversionClient('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI2ZmI4NjAzNDk2NjQ4MjJiMmZjYzQ1Y2NmODY0NWEwIiwiaWF0IjoxNjU3MjEzMDUyfQ.PHN_7SBLWyzvBfMk4sBOtk55tN_Z53dFbW3EIUmlucw')
+# try:
+#     client.convert('convert.json_objects_to_excel', 'all.json', 'all.xlsx', { 'excel_format': 'xlsx' })
+# except Exception as error:
+#     print(error)

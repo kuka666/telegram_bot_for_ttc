@@ -1,2 +1,52 @@
 [
+    {
+        "iin": "870228350076",
+        "fio": "Альменов Берик Бахитжанович",
+        "phone_number": "77077012916",
+        "balans": "0",
+        "count_deti": "0",
+        "dengi": 50000,
+        "sportmaster_count": {
+            "type_nominal": "10000",
+            "count_10000": 1,
+            "count_15000": 0,
+            "count_25000": 0
+        },
+        "mechta_count": {
+            "type_nominal": "15000",
+            "count_10000": 0,
+            "count_15000": 1,
+            "count_25000": 0
+        },
+        "lcwaikiki_count": {
+            "type_nominal": "15000",
+            "count_10000": 0,
+            "count_15000": 1,
+            "count_25000": 0
+        },
+        "dengi_count": {
+            "type_nominal": "25000",
+            "count_5000": 0,
+            "count_10000": 0,
+            "count_15000": 0,
+            "count_25000": 2
+        },
+        "lok": "sportmaster_count",
+        "accept": true,
+        "save": true,
+        "lang": "Русский язык",
+        "sended": false,
+        "comment": [
+            {
+                "rebenok_fio": "Бахитжанов Арман Берикович",
+                "birthday": "04.09.2010",
+                "age": "12"
+            },
+            {
+                "rebenok_fio": "Бахитжанова Перизат Берикович",
+                "birthday": "05.10.2008",
+                "age": "13"
+            }
+        ]
+    }
 ]
