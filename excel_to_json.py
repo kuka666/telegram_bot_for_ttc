@@ -1,10 +1,11 @@
 from enum import unique
 import re
+from isort import file
 import pandas as pd
 import json
 from datetime import date
 import excel2json
-from regex import B
+from regex import B, F
 import requests
 from conversiontools import ConversionClient
 import csv
@@ -283,7 +284,7 @@ rod_data = []
 counts = []
 kuka = []
 
-# ## ОТСЮДА 1 
+# ## ОТСЮДА 1
 # with open('1.json', encoding='utf-8') as file:
 #     bot = json.load(file)
 # for i in bot :
@@ -293,8 +294,8 @@ kuka = []
 #         data.append(i)
 #         with open('2.json', 'w', encoding='utf-8') as f:
 #             f.write(json.dumps(data, ensure_ascii=False))
-# ## ДОСЮДА 1 
-# ОТСЮДА 2 
+# ## ДОСЮДА 1
+# ОТСЮДА 2
 # with open('1.json', encoding='utf-8') as file:
 #     bot = json.load(file)
 # with open('2.json', encoding='utf-8') as f:
@@ -311,9 +312,9 @@ kuka = []
 # for c in range(len(user_data)):
 #     counts.append(user_data[c]['№'])
 
-with open('kuka.json', encoding='utf-8') as files:
-    kuka = json.load(files)
-print(len(kuka))
+# with open('kuka.json', encoding='utf-8') as files:
+#     kuka = json.load(files)
+# print(len(kuka))
 # for i in range(len(user_data)):
 #     if(int(user_data[i]['№']) == int(counts[i])):
 #         result = {
@@ -352,3 +353,102 @@ print(len(kuka))
 #         "ребенок": user_data['ребенок']}
 # print(i)
 # a = a +1
+
+with open('kuka.json', encoding='utf-8') as files:
+    kuka = json.load(files)
+with open('contact.json', encoding='utf-8') as f:
+    contact = json.load(f)
+kuka_json = []
+contact_json = []
+for i in kuka:
+    kuka_json.append(i)
+for b in contact:
+    contact_json.append(b)
+c = 0
+strip_contact_json = []
+problem_contact_json = []
+
+# print(contact_json)
+with open('u.json', encoding='utf-8') as files:
+    data = json.load(files)
+print(len(data))
+# for b in range(len(contact_json)):
+#     for i in range(len(kuka_json)):
+#         if(kuka_json[i]['ФИО'].replace(" ", "")==contact_json[b]['ФИО'].replace(" ", "")):
+#             all = {
+#                 "ФИО": kuka_json[i]['ФИО'],
+#                 "ФИО Ребенка": kuka_json[i]['ФИО Ребенка'],
+#                 "Дата рождения Ребенка": kuka_json[i]['Дата рождения Ребенка'],
+#                 "Филиал": kuka_json[i]['Филиал'],
+#                 "ИИН": contact_json[b]['ИНН'],
+#                 "Телефон": contact_json[b]['Телефон']
+#             }      
+#             data.append(all)
+
+# with open('u.json', "w", encoding='utf8') as f:
+#     f.write(json.dumps(data, ensure_ascii=False))
+
+
+# for b in range(len(contact_json)):
+#     strip_contact_json.append(contact_json[b]['ФИО'].replace(" ",""))
+
+# for i in range(len(kuka_json)):
+#     if kuka_json[i]['ФИО'].replace(" ","") in strip_contact_json:
+#         kuka = {
+#             "ФИО": kuka_json[i]['ФИО'],
+#             "ФИО Ребенка": kuka_json[i]['ФИО Ребенка'],
+#             "Дата рождения Ребенка": kuka_json[i]['ФИО Ребенка'],
+#             "Филиал": "Цент. аппарат",
+#             "ИИН": "",
+#             "Телефон": ""
+#         }
+#     else:
+#         problem_contact_json.append(kuka_json[i]['ФИО'])
+
+# print(str(len(kuka_json)) + " " + str(c))
+
+# sam_list = list(set(problem_contact_json))
+
+# print(sam_list)
+# print(len(sam_list))
+
+# unique = { each['ФИО'] : each for each in kuka }.values()
+
+# for i in unique:
+#     result = {
+#         "ФИО": i['ФИО']
+#     }
+#     names.append(result)
+# with open('names.json', "w", encoding='utf8') as f:
+#     f.write(json.dumps(names, ensure_ascii=False))
+# client = ConversionClient(
+#     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI2ZmI4NjAzNDk2NjQ4MjJiMmZjYzQ1Y2NmODY0NWEwIiwiaWF0IjoxNjU3MjEzMDUyfQ.PHN_7SBLWyzvBfMk4sBOtk55tN_Z53dFbW3EIUmlucw')
+# try:
+#     client.convert('convert.json_objects_to_excel',
+#                     'names.json', 'names.xlsx', {'excel_format': 'xlsx'})
+# except Exception as error:
+#     print(error)
+
+# with open('kuka.json', encoding='utf-8') as files:
+#     kuka = json.load(files)
+
+# print(len(kuka))
+
+# with open('kuka.json', encoding='utf-8') as file:
+#     kuka = json.load(file)
+# with open('contact.json', encoding='utf-8') as f:
+#     contact = json.loads(f.read())
+# kuka_json = []
+# contact_json = []
+# for i in kuka:
+#     kuka_json.append(i)
+# for b in contact:
+#     contact_json.append(b)
+# c = 0
+# for i in kuka_json:
+#     for a in contact_json:
+#         if(kuka_json[i]['ФИО'] == contact_json[a]['ФИО']):
+#             c = c+1
+#             print(c)
+
+# print(str(len(kuka_json)) + " " + str(c))
