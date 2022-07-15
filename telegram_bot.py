@@ -400,7 +400,7 @@ def callbackLang(call):
                 bot.edit_message_text(
                     chat_id=call.message.chat.id, message_id=call.message.message_id, text=listLangDef[langNumber1[0]] + " " + listLang[langNumber1[0]])
                 bot.send_message(call.message.chat.id,
-                                 listInstruck[langNumber1[0]] + '\n\nИнструкция: '+ listYouTube[langNumber1[0]])
+                                 listInstruck[langNumber1[0]] + '\n\nИнструкция: '+ listYouTube[langNumber1[0]],parse_mode="HTML")
                 user_data['lang'] = listLang[langNumber1[0]]
                 get_phone_number(call.message)
             elif call.data == "d" or call.data == "n" or call.data == "i" or call.data == "j":
@@ -509,75 +509,18 @@ def callbackLang(call):
                 if call.data == 'soglasitsya':
                     if(info_data['type']=='sert'):
                         if(int(user_data['balans']) == 0):  
+                            get_sogl(call.message)
                             bot.delete_message(call.message.chat.id,
                                         call.message.message_id)
-                            get_sogl(call.message)
                             bot.edit_message_reply_markup(
                                 call.from_user.id, call.message.message_id, reply_markup=None)
                         else:
                             bot.send_message(
-                                call.message.chat.id, listVybrana[langNumber1[0]] + user_data['balans '])
-                            if(user_data[user_data['lok']]['type_nominal'] == "5000"):
-                                price = str(user_data[user_data['lok']]
-                                            ['count_5000'] * 5000) + 'тг'
-                                shtuk = str(user_data[user_data['lok']]['count_5000'])
-                            elif(user_data[user_data['lok']]['type_nominal'] == "10000"):
-                                price = str(user_data[user_data['lok']]
-                                            ['count_10000'] * 10000) + 'тг'
-                                shtuk = str(user_data[user_data['lok']]['count_10000'])
-                            elif(user_data[user_data['lok']]['type_nominal'] == "15000"):
-                                price = str(user_data[user_data['lok']]
-                                            ['count_15000'] * 15000) + 'тг'
-                                shtuk = str(user_data[user_data['lok']]['count_15000'])
-                            elif(user_data[user_data['lok']]['type_nominal'] == "25000"):
-                                price = str(user_data[user_data['lok']]
-                                            ['count_25000'] * 25000) + 'тг'
-                                shtuk = str(user_data[user_data['lok']]['count_25000'])
-                            elif(user_data[user_data['lok']] == user_data['dengi_count']):
-                                if(user_data[user_data['lok']]['type_nominal'] == "5000"):
-                                    price = str(
-                                        user_data[user_data['lok']]['count_5000'] * 5000) + 'тг'
-                                    shtuk = str(
-                                        user_data[user_data['lok']]['count_5000'])
-
-                            keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
-                            callback_button1 = telebot.types.InlineKeyboardButton(
-                                text='➕', callback_data='plus',)
-                            callback_button2 = telebot.types.InlineKeyboardButton(
-                                text=shtuk + 'шт.- ' + price, callback_data='howmany')
-                            callback_button3 = telebot.types.InlineKeyboardButton(
-                                text='➖', callback_data='minus')
-                            callback_button4 = telebot.types.InlineKeyboardButton(
-                                text=listTagyKosu[langNumber1[0]], callback_data='enough')
-                            callback_button5 = telebot.types.InlineKeyboardButton(
-                                text='❌', callback_data='delete_full')
-                            callback_button6 = telebot.types.InlineKeyboardButton(
-                                text=listOstatok[langNumber1[0]] + user_data['balans'] + "тг", callback_data='balans')
-                            callback_button7 = telebot.types.InlineKeyboardButton(
-                                text=listAccept[langNumber1[0]], callback_data='soglasitsya')
-                            callback_button8 = telebot.types.InlineKeyboardButton(
-                                text=listVashaSumma[langNumber1[0]] + get_count() + 'тг', callback_data='balans')
-                            if(user_data['balans'] == get_count()):
-                                keyboard.add(callback_button8)
-                                keyboard.add(callback_button2)
-                                keyboard.row(callback_button1,
-                                            callback_button3, callback_button5)
-                                keyboard.add(callback_button7)
-                                keyboard.add(callback_button4)
-                            else:
-                                keyboard.add(callback_button8)
-                                keyboard.add(callback_button6)
-                                keyboard.add(callback_button2)
-                                keyboard.row(callback_button1,
-                                            callback_button3, callback_button5)
-                                keyboard.add(callback_button7)
-                                keyboard.add(callback_button4)
-                            bot.edit_message_reply_markup(
-                                call.from_user.id, call.message.message_id, reply_markup=keyboard)
+                                call.message.chat.id, listVybrana[langNumber1[0]] + user_data['balans'])
                     else:
                         bot.delete_message(call.message.chat.id,
                                        call.message.message_id)
-                        user_data['dengi_count']['count_5000'] = user_data['dengi_count']['count_5000'] + (
+                        user_data['dengi_count']['count_5000'] = user_data['dengi_count']['count_5000'] + int(
                             int(user_data['balans'])/5000)
                         user_data['dengi'] = user_data['dengi'] + \
                             int(user_data['balans'])
@@ -1845,8 +1788,8 @@ listIIN = ['В базе данных не нашли ваш номер\nНапи
 
 listBalans = ['Ваша сумма', 'Сiздiн балансыныз', ]
 listuVas = [' у вас ', ' сізде ']
-listRebenok = [' ребенок/детей школьного возраста\n\nНа 1 школьника в возрасте от 6 до 17 лет включительно полагается 45000тг',
-               ' мектеп жаcтағы балаңыз бар\n\n 1 балаға 45 000 теңгеден берiледi (ағымдағы жылдың 1 қыркүйегіндегі жағдай бойынша 6-дан 17 жасқа дейін)  !!!', ' ребенок/детей школьного возраста\n\nНа 1 школьника в возрасте от 6 до 17 лет включительно полагается 45000тг']
+listRebenok = [' ребенок/детей школьного возраста\n\nНа 1 ребенок-школьника в возрасте от 6 до 17 лет включительно полагается 45000тг',
+               ' мектеп жаcтағы балаңыз бар\n\n 1 балаға-оқушыға 45 000 теңгеден берiледi (ағымдағы жылдың 1 қыркүйегіндегі жағдай бойынша 6-дан 17 жасқа дейін)  !!!', ' ребенок/детей школьного возраста\n\nНа 1 школьника в возрасте от 6 до 17 лет включительно полагается 45000тг']
 list3Bank = ['Согласны ли вы с указаными данными? ',
              'Көрсетiлген ақпаратпен келiсеciз бе?']
 
@@ -1903,8 +1846,8 @@ listCheckPhone = ['Проверка номера\nНажмите на кнопк
                   'Нөмірді тексеру\n"Телефон нөмірін жіберу" батырмасын басыңыз']
 listLangChange = ['Язык изменен ', 'Тіл өзгерді']
 ChecklastMess = ['Проверить Корзину', 'Себетті Тексеру']
-listInstruck = ['Уважаемые коллеги!!\n\nВ рамках Коллективного договора на подготовку детей к школе просим пройти опрос.\nСрок  прохождения опроса до 17 июля 2022 года.',
-                'Құрметті әріптестер!!\nБалаларды мектепке дайындауға арналған Ұжымдық шарт аясында сауалнамадан өтуді сұраймыз.\nСауалнамадан өту мерзімі 2022 жылғы 17 шілдеге дейін.']
+listInstruck = ['Уважаемые коллеги!!\n\nВ рамках Коллективного договора на подготовку детей к школе просим пройти опрос.\nСрок  прохождения опроса до <b>19</b> июля 2022 года.',
+                'Құрметті әріптестер!!\nБалаларды мектепке дайындауға арналған Ұжымдық шарт аясында сауалнамадан өтуді сұраймыз.\nСауалнамадан өту мерзімі 2022 жылғы <b>19</b> шілдеге дейін.']
 listPart = ['Частично деньги или сертификаты',
             'Ішінара ақша немесе сертификаттар']
 listNotinBD = ['<b>Вас нету базе данных</b>\nНапишите свой ИИН',
