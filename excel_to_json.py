@@ -279,7 +279,7 @@ def add_plus(kuka):
 #     print(bot)
 
 a = 1
-user_data = []
+i = []
 rod_data = []
 counts = []
 kuka = []
@@ -354,24 +354,24 @@ kuka = []
 # print(i)
 # a = a +1
 
-with open('kuka.json', encoding='utf-8') as files:
-    kuka = json.load(files)
-with open('contact.json', encoding='utf-8') as f:
-    contact = json.load(f)
-kuka_json = []
-contact_json = []
-for i in kuka:
-    kuka_json.append(i)
-for b in contact:
-    contact_json.append(b)
-c = 0
-strip_contact_json = []
-problem_contact_json = []
+# with open('kuka.json', encoding='utf-8') as files:
+#     kuka = json.load(files)
+# with open('contact.json', encoding='utf-8') as f:
+#     contact = json.load(f)
+# kuka_json = []
+# contact_json = []
+# for i in kuka:
+#     kuka_json.append(i)
+# for b in contact:
+#     contact_json.append(b)
+# c = 0
+# strip_contact_json = []
+# problem_contact_json = []
 
-# print(contact_json)
-with open('u.json', encoding='utf-8') as files:
-    data = json.load(files)
-print(len(data))
+# # print(contact_json)
+# with open('u.json', encoding='utf-8') as files:
+#     data = json.load(files)
+# print(len(data))
 # for b in range(len(contact_json)):
 #     for i in range(len(kuka_json)):
 #         if(kuka_json[i]['ФИО'].replace(" ", "")==contact_json[b]['ФИО'].replace(" ", "")):
@@ -382,7 +382,7 @@ print(len(data))
 #                 "Филиал": kuka_json[i]['Филиал'],
 #                 "ИИН": contact_json[b]['ИНН'],
 #                 "Телефон": contact_json[b]['Телефон']
-#             }      
+#             }
 #             data.append(all)
 
 # with open('u.json', "w", encoding='utf8') as f:
@@ -452,3 +452,73 @@ print(len(data))
 #             print(c)
 
 # print(str(len(kuka_json)) + " " + str(c))
+# comment =  [
+#             {
+#                 "ФИО Ребенка": "Тест от Куки",
+#                 "Дата рождения ребенка": "22.05.2016",
+#                 "Возраст": "6"
+#             },
+#             {
+#                 "ФИО Ребенка": "Тест от Куки2",
+#                 "Дата рождения ребенка": "22.05.2014",
+#                 "Возраст": "8"
+#             },
+#             {
+#                 "ФИО Ребенка": "Тест от Куки",
+#                 "Дата рождения ребенка": "22.05.2016",
+#                 "Возраст": "6"
+#             }]
+# print(comment.clear())
+# comment = []
+# print(comment)
+# with open('result.json', encoding='utf-8') as files:
+#     res = json.load(files)
+# if(res[0]['iin']==1):
+#     res[0]['balans'] = "1000"
+# with open('result.json', "w", encoding='utf8') as f:
+#     f.write(json.dumps(res, ensure_ascii=False))
+# with open('u.json', encoding='utf-8') as file:
+#     stock = json.load(file)
+# with open('result.json', encoding='utf-8') as file:
+#     data = json.load(file)
+# for i in data:
+#     if(i['id']=="445277169"):
+#         print(i['balans'])
+# # for smth in stock:
+# #     for i in range(len(data)):
+# #         if(smth['Телефон'].replace("+", "") == data[i]['phone_number']):
+# #             print(smth['Телефон'].replace("+", ""))
+# luk = {
+#         'id': str(78978),
+#         'iin': '',
+#         'fio': '',
+#         'phone_number': str(5446),
+#         'balans': '',
+#         'count_deti': '',
+#         'dengi': 0,
+#         'sportmaster_count': {"type_nominal": "", "count_5000": 0,"count_10000": 0, "count_15000": 0, "count_25000": 0},
+#         'mechta_count': {"type_nominal": "","count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
+#         'lcwaikiki_count': {"type_nominal": "","count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
+#         'abdi_count': {"type_nominal": "","count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
+#         'dengi_count': {"type_nominal": "", "count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
+#         'lok': '',
+#         'accept': False,
+#         'save': False,
+#         'lang': '',
+#         'sended': False,
+#         'comment': []
+#     }
+
+
+# data.append(luk)
+# with open('result.json', "w", encoding='utf8') as file:
+#     file.write(json.dumps(data, ensure_ascii=False))
+
+with open('result.json', encoding='utf-8') as file:
+        data = json.load(file)
+for i in data:
+    if(i['id']=="445277169"):
+        i['id'] = "4564"
+with open('result.json', "w", encoding='utf8') as f:
+    f.write(json.dumps(data, ensure_ascii=False))
+

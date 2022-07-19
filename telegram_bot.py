@@ -1,7 +1,10 @@
+#!/usr/bin/python3
+
+from ast import Break
 from datetime import date
 from email import message
 from itertools import count
-from re import L
+from re import I, L
 import re
 from time import sleep
 import telebot
@@ -14,30 +17,31 @@ from yaml import parse
 from conversiontools import ConversionClient
 
 
-token = '5512229550:AAF9qGoRFPa3ukPqxTgbbbJb4dR_NJtAEeE'
+token = '5530094141:AAENzXi4uAPkoFqZu_4Tgv37qwyGituhq8w'
 bot = telebot.TeleBot(token)
 
 langNumber1 = [0]
-user_data = {
-    'iin': '',
-    'fio': '',
-    'phone_number': '',
-    'balans': '',
-    'count_deti': '',
-    'dengi': 0,
-    'sportmaster_count': {"type_nominal": "", "count_5000": 0,"count_10000": 0, "count_15000": 0, "count_25000": 0},
-    'mechta_count': {"type_nominal": "","count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
-    'lcwaikiki_count': {"type_nominal": "","count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
-    'abdi_count': {"type_nominal": "","count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
-    'dengi_count': {"type_nominal": "", "count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
-    'lok': '',
-    'accept': False,
-    'save': False,
-    'lang': '',
-    'sended': False,
-    'comment': []
-}
 
+user_data = {
+            'id': '',
+            'iin': '',
+            'fio': '',
+            'phone_number': '',
+            'balans': '',
+            'count_deti': '',
+            'dengi': 0,
+            'sportmaster_count': {"type_nominal": "", "count_5000": 0,"count_10000": 0, "count_15000": 0, "count_25000": 0},
+            'mechta_count': {"type_nominal": "","count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
+            'lcwaikiki_count': {"type_nominal": "","count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
+            'abdi_count': {"type_nominal": "","count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
+            'dengi_count': {"type_nominal": "", "count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
+            'lok': '',
+            'accept': False,
+            'save': False,
+            'lang': '',
+            'sended': False,
+            'comment': []
+        }
 info_data = {
     'count_plus': 0,
     'count_minus': 0,
@@ -51,19 +55,14 @@ def lang(message):
 
     bot.send_photo(message.from_user.id,
                    photo=open('img/images.jpg', 'rb'), caption="<b>Добро Пожаловать!\nҚош келдіңіз!</b>", parse_mode="HTML")
-    with open('result.json', encoding='utf-8') as file:
-        data = json.load(file)
-    if user_data['accept'] == True and user_data['save'] == False:
-        get_cart(message)
-    else:
-        keyboard = telebot.types.InlineKeyboardMarkup()
-        callback_button1 = telebot.types.InlineKeyboardButton(
-            text=listLang[0], callback_data='r')
-        callback_button2 = telebot.types.InlineKeyboardButton(
-            text=listLang[1], callback_data='k')
-        keyboard.add(callback_button1, callback_button2)
-        bot.send_message(message.from_user.id,
-                         '<b>Выберите язык:\nТілді таңдаңыз:\n</b>', reply_markup=keyboard, parse_mode="HTML")
+    keyboard = telebot.types.InlineKeyboardMarkup()
+    callback_button1 = telebot.types.InlineKeyboardButton(
+        text=listLang[0], callback_data='r')
+    callback_button2 = telebot.types.InlineKeyboardButton(
+        text=listLang[1], callback_data='k')
+    keyboard.add(callback_button1, callback_button2)
+    bot.send_message(message.from_user.id,
+                    '<b>Выберите язык:\nТілді таңдаңыз:\n</b>', reply_markup=keyboard, parse_mode="HTML")
 
 
 def lox(message):
@@ -94,199 +93,176 @@ def get_all_data(message):
         stock = json.load(file)
     with open('result.json', encoding='utf-8') as file:
         data = json.load(file)
-    try:
-        user_data['phone_number'] = message.contact.phone_number
-        user_data['phone_number'] = user_data['phone_number'].replace("+", "")
-    except:
-        get_phone_number(message)
+    with open('all.json', encoding='utf-8') as file:
+        all = json.load(file)
 
-    try:
-        if(message.contact.user_id == message.from_user.id):
-            for smth in stock:
-                if(smth['Телефон'].replace("+", "") == user_data['phone_number']):
-                    iin = find_iin(message)
-                    a = a + 1
-                    bot.delete_message(message.chat.id,
-                                       message.message_id+1)
+    for n in all:
+        if(find_iin(message) == n['ИИН Сотрудника']):
+            repeat_start(message)
+            break
+    else:
+        try:
+            if(message.contact.user_id == message.from_user.id):
+                for smth in stock:
+                    if(smth['Телефон'].replace("+", "") == str(message.contact.phone_number).replace("+","")):
+                        save_data_json(message)
+                        a = a + 1
+                        break
+                else:
+                    bot.send_message(
+                        message.from_user.id, listIIN[langNumber1[0]],  parse_mode="HTML")
+                    bot.register_next_step_handler(message, lox)
+
+                    
             else:
                 bot.send_message(
-                    message.from_user.id, listIIN[langNumber1[0]],  parse_mode="HTML")
-                bot.register_next_step_handler(message, lox)
-
-        else:
-            bot.send_message(
-                message.from_user.id, listItIsNotU[langNumber1[0]])
+                    message.chat.id, listItIsNotU[langNumber1[0]])
+                get_phone_number(message)
+        except Exception as ex:
+            print(ex)
+      
+        try:
+            if(message.contact.user_id == message.from_user.id):
+                for smth in stock:
+                    if smth['Телефон'] == str(message.contact.phone_number).replace("+","") :
+                        bot.send_message(
+                            message.from_user.id, "<b>" + smth['ФИО'] + "</b>" + listuVas[langNumber1[0]] + str(get_count_deti(message)) + listRebenok[langNumber1[0]], parse_mode="HTML")
+                        break
+            if(message.contact.user_id == message.from_user.id):
+                for smth in stock:
+                    if smth['Телефон'] == str(message.contact.phone_number).replace("+","") :
+                            birthday = int(between_date_day(
+                                smth['Дата рождения Ребенка'], '01.09.2022') / 365)
+                            bot.send_message(
+                                message.from_user.id, "<b>" + smth['ФИО Ребенка'] + " " + str(birthday) + " " + listLet[langNumber1[0]] + "</b>", parse_mode="HTML")
+            if(message.contact.user_id == message.from_user.id):
+                for smth in stock:
+                    if smth['Телефон'] == str(message.contact.phone_number).replace("+","") :
+                            kb = telebot.types.InlineKeyboardMarkup(row_width=1)
+                            if(langNumber1[0] == 0):
+                                callback_button1 = telebot.types.InlineKeyboardButton(
+                                    text='Да', callback_data='d')
+                                callback_button2 = telebot.types.InlineKeyboardButton(
+                                    text='Нет', callback_data='n')
+                                kb.add(callback_button1, callback_button2)
+                            else:
+                                callback_button1 = telebot.types.InlineKeyboardButton(
+                                    text='Ия', callback_data='i')
+                                callback_button2 = telebot.types.InlineKeyboardButton(
+                                    text='Жок', callback_data='j')
+                                kb.add(callback_button1, callback_button2)
+                            # bot.send_message(message.from_user.id,
+                            #                  listCart[langNumber1[0]] + '<b>' + get_count() +  'тг</b>',parse_mode="HTML")
+                            bot.send_message(message.from_user.id,
+                                            list3Bank[langNumber1[0]], reply_markup=kb)
+                            break
+        except Exception as ex:
+            print(ex)
             get_phone_number(message)
-    except Exception as ex:
-        print(ex)
 
-    for i in data:
-        if(user_data['phone_number'] == i['phone_number']):
-            user_data['iin'] = i['iin']
-            user_data['fio'] = i['fio']
-            user_data['phone_number'] = i['phone_number']
-            user_data['balans'] = i['balans']
-            user_data['count_deti'] = i['count_deti']
-            user_data['dengi'] = i['dengi']
-            user_data['sportmaster_count'] = i['sportmaster_count']
-            user_data['mechta_count'] = i['mechta_count']
-            user_data['lcwaikiki_count'] = i['lcwaikiki_count']
-            user_data['abdi_count'] = i['abdi_count']
-            user_data['dengi_count'] = i['dengi_count']
-            user_data['accept'] = i['accept']
-            user_data['save'] = i['save']
-            user_data['lang'] = i['lang']
-            user_data['comment'] = i['comment']
 
+def append_deti(lok,message):
+    with open('u.json', encoding='utf-8') as files:
+        stock = json.load(files)
     for smth in stock:
-        if(message.contact.user_id == message.from_user.id):
-            if smth['Телефон'].replace("+", "") == user_data['phone_number'] and user_data['save'] == False and user_data['accept'] == False:
-                if(a == 1):
-                    if(langNumber1[0] == 0):
-                        bot.send_message(
-                            message.from_user.id, "<b>" + smth['ФИО'] + "</b>" + listuVas[0] + str(get_count_deti()) + listRebenok[0], parse_mode="HTML")
-                        user_data['fio'] = smth['ФИО']
-                        user_data['iin'] = find_iin(message)
-                        break
-                    elif(langNumber1[0] == 1):
-                        bot.send_message(
-                            message.from_user.id, "<b>" + smth['ФИО'] + "</b>" + listuVas[1] + str(get_count_deti()) + listRebenok[1], parse_mode="HTML")
-                        user_data['fio'] = smth['ФИО']
-                        user_data['iin'] = find_iin(message)
-                        break
-                elif(a > 1):
-                    if(langNumber1[0] == 0):
-                        bot.send_message(
-                            message.from_user.id, "<b>" + smth['ФИО'] + "</b>" + listuVas[0] + str(get_count_deti()) + listRebenok[2], parse_mode="HTML")
-                        user_data['fio'] = smth['ФИО']
-                        user_data['iin'] = find_iin(message)
-                        break
-                    elif(langNumber1[0] == 1):
-                        bot.send_message(
-                            message.from_user.id, "<b>" + smth['ФИО'] + "</b>" + listuVas[1] + str(get_count_deti()) + listRebenok[1], parse_mode="HTML")
-                        user_data['fio'] = smth['ФИО']
-                        user_data['iin'] = find_iin(message)
-                        break
-
-    for smth in stock:
-        if(message.contact.user_id == message.from_user.id):
-            if smth['Телефон'].replace("+", "") == user_data['phone_number'] and user_data['save'] == False and user_data['accept'] == False:
-                birthday = int(between_date_day(
-                    smth['Дата рождения Ребенка'], '01.09.2022') / 365)
-                bot.send_message(
-                    message.from_user.id, "<b>" + smth['ФИО Ребенка'] + " " + str(birthday) + " " + listLet[langNumber1[0]] + "</b>", parse_mode="HTML")
-                user_data['comment'].append(
-                    {"ФИО Ребенка": smth['ФИО Ребенка'], "Дата рождения ребенка": smth["Дата рождения Ребенка"], "Возраст": str(birthday)})
-    for smth in stock:
-        if(message.contact.user_id == message.from_user.id):
-            if smth['Телефон'].replace("+", "") == user_data['phone_number'] and user_data['save'] == False and user_data['accept'] == False:
-                kb = telebot.types.InlineKeyboardMarkup(row_width=1)
-                if(langNumber1[0] == 0):
-                    callback_button1 = telebot.types.InlineKeyboardButton(
-                        text='Да', callback_data='d')
-                    callback_button2 = telebot.types.InlineKeyboardButton(
-                        text='Нет', callback_data='n')
-                    kb.add(callback_button1, callback_button2)
-                else:
-                    callback_button1 = telebot.types.InlineKeyboardButton(
-                        text='Ия', callback_data='i')
-                    callback_button2 = telebot.types.InlineKeyboardButton(
-                        text='Жок', callback_data='j')
-                    kb.add(callback_button1, callback_button2)
-                # bot.send_message(message.from_user.id,
-                #                  listCart[langNumber1[0]] + '<b>' + get_count() +  'тг</b>',parse_mode="HTML")
-                bot.send_message(message.from_user.id,
-                                 list3Bank[langNumber1[0]], reply_markup=kb)
-                break
-    if(message.contact.user_id == message.from_user.id):
-        if(user_data['accept'] == True and user_data['save'] == False):
-            get_cart(message)
-    for i in data:
-        if(user_data['save'] == True and user_data['phone_number'] == i['phone_number']):
-            repeat_start(message)
-
-
+        if(smth['Телефон'].replace("+", "") == str(message.contact.phone_number).replace("+","")):
+            birthday = int(between_date_day(
+                            smth['Дата рождения Ребенка'], '01.09.2022') / 365)
+            lok.append({"ФИО Ребенка": smth['ФИО Ребенка'], "Дата рождения ребенка": smth["Дата рождения Ребенка"], "Возраст": str(birthday)})
 def add_and_delete(message):
-    if(user_data[user_data['lok']]['type_nominal'] == "5000"):
-        price = str(user_data[user_data['lok']]['count_5000'] * 5000) + 'тг'
-        shtuk = str(user_data[user_data['lok']]['count_5000'])
-    elif(user_data[user_data['lok']]['type_nominal'] == "10000"):
-        price = str(user_data[user_data['lok']]['count_10000'] * 10000) + 'тг'
-        shtuk = str(user_data[user_data['lok']]['count_10000'])
-    elif(user_data[user_data['lok']]['type_nominal'] == "15000"):
-        price = str(user_data[user_data['lok']]['count_15000'] * 15000) + 'тг'
-        shtuk = str(user_data[user_data['lok']]['count_15000'])
-    elif(user_data[user_data['lok']]['type_nominal'] == "25000"):
-        price = str(user_data[user_data['lok']]['count_25000'] * 25000) + 'тг'
-        shtuk = str(user_data[user_data['lok']]['count_25000'])
-    elif(user_data[user_data['lok']] == user_data['dengi_count']):
-        if(user_data[user_data['lok']]['type_nominal'] == "5000"):
-            price = str(user_data[user_data['lok']]
-                        ['count_5000'] * 5000) + 'тг'
-            shtuk = str(user_data[user_data['lok']]['count_5000'])
-    keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
-    callback_button1 = telebot.types.InlineKeyboardButton(
-        text='➕', callback_data='plus',)
-    callback_button2 = telebot.types.InlineKeyboardButton(
-        text=shtuk + 'шт.- ' + price, callback_data='howmany')
-    callback_button3 = telebot.types.InlineKeyboardButton(
-        text='➖', callback_data='minus')
-    callback_button4 = telebot.types.InlineKeyboardButton(
-        text=listAddMore[langNumber1[0]], callback_data='enough')
-    callback_button5 = telebot.types.InlineKeyboardButton(
-        text='❌', callback_data='delete_full')
-    callback_button6 = telebot.types.InlineKeyboardButton(
-        text=listOstatok[langNumber1[0]] + user_data['balans'] + "тг", callback_data='balans')
-    callback_button7 = telebot.types.InlineKeyboardButton(
-        text=listPodtverdit[langNumber1[0]], callback_data='soglasitsya')
-    callback_button8 = telebot.types.InlineKeyboardButton(
-        text=listVashaSumma[langNumber1[0]] + get_count() + 'тг', callback_data='balans')
-    if(user_data['balans'] == get_count()):
-        keyboard.add(callback_button8)
-        keyboard.add(callback_button2)
-        keyboard.row(callback_button1, callback_button3, callback_button5)
-        keyboard.add(callback_button7)
-        keyboard.add(callback_button4)
-    else:
-        keyboard.add(callback_button8)
-        keyboard.add(callback_button6)
-        keyboard.add(callback_button2)
-        keyboard.row(callback_button1, callback_button3, callback_button5)
-        keyboard.add(callback_button7)
-        keyboard.add(callback_button4)
-    if(user_data['lok'] == 'dengi_count'):
-        bot.send_message(message.chat.id, "<b>Деньги</b>\n" +
-                         listKratnuyu[langNumber1[0]] + user_data[user_data['lok']]['type_nominal'] + "тг", reply_markup=keyboard, parse_mode="HTML")
-    elif(user_data['lok'] == 'sportmaster_count'):
-        bot.send_photo(message.chat.id,
-                       photo=open('img/sport.jpg', 'rb'), caption="<b>Спортмастер</b>\n" + listKratnuyu[langNumber1[0]] + user_data[user_data['lok']]['type_nominal'] + "тг\n" + listCountKol[langNumber1[0]], parse_mode="HTML", reply_markup=keyboard)
-    elif(user_data['lok'] == 'mechta_count'):
-        bot.send_photo(message.chat.id,
-                       photo=open('img/mechta.png', 'rb'), caption="<b>Меchta</b>\n" + listKratnuyu[langNumber1[0]] + user_data[user_data['lok']]['type_nominal'] + "тг\n" + listCountKol[langNumber1[0]], parse_mode="HTML", reply_markup=keyboard)
-    elif(user_data['lok'] == 'lcwaikiki_count'):
-        bot.send_photo(message.chat.id,
-                       photo=open('img/lcwaikiki.png', 'rb'), caption="<b>LCWaikiki</b>\n" + listKratnuyu[langNumber1[0]] + user_data[user_data['lok']]['type_nominal'] + "тг\n" + listCountKol[langNumber1[0]], parse_mode="HTML", reply_markup=keyboard)
-    elif(user_data['lok'] == 'abdi_count'):
-        bot.send_photo(message.chat.id,
-                       photo=open('img/adbi.jpg', 'rb'), caption="<b>ABDI</b>\n" + listKratnuyu[langNumber1[0]] + user_data[user_data['lok']]['type_nominal'] + "тг\n" + listCountKol[langNumber1[0]], parse_mode="HTML", reply_markup=keyboard)
+    with open('result.json', encoding='utf-8') as file:
+        data = json.load(file)
+    for i in data:
+        if(i['id']==str(message.chat.id)):
+            if(i[i['lok']]['type_nominal'] == "5000"):
+                price = str(i[i['lok']]['count_5000'] * 5000) + 'тг'
+                shtuk = str(i[i['lok']]['count_5000'])
+            elif(i[i['lok']]['type_nominal'] == "10000"):
+                price = str(i[i['lok']]['count_10000'] * 10000) + 'тг'
+                shtuk = str(i[i['lok']]['count_10000'])
+            elif(i[i['lok']]['type_nominal'] == "15000"):
+                price = str(i[i['lok']]['count_15000'] * 15000) + 'тг'
+                shtuk = str(i[i['lok']]['count_15000'])
+            elif(i[i['lok']]['type_nominal'] == "25000"):
+                price = str(i[i['lok']]['count_25000'] * 25000) + 'тг'
+                shtuk = str(i[i['lok']]['count_25000'])
+            elif(i[i['lok']] == i['dengi_count']):
+                if(i[i['lok']]['type_nominal'] == "5000"):
+                    price = str(i[i['lok']]
+                                ['count_5000'] * 5000) + 'тг'
+                    shtuk = str(i[i['lok']]['count_5000'])
+            keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+            callback_button1 = telebot.types.InlineKeyboardButton(
+                text='➕', callback_data='plus',)
+            callback_button2 = telebot.types.InlineKeyboardButton(
+                text=shtuk + 'шт.- ' + price, callback_data='howmany')
+            callback_button3 = telebot.types.InlineKeyboardButton(
+                text='➖', callback_data='minus')
+            callback_button4 = telebot.types.InlineKeyboardButton(
+                text=listAddMore[langNumber1[0]], callback_data='enough')
+            callback_button5 = telebot.types.InlineKeyboardButton(
+                text='❌', callback_data='delete_full')
+            callback_button6 = telebot.types.InlineKeyboardButton(
+                text=listOstatok[langNumber1[0]] + i['balans'] + "тг", callback_data='balans')
+            callback_button7 = telebot.types.InlineKeyboardButton(
+                text=listPodtverdit[langNumber1[0]], callback_data='soglasitsya')
+            callback_button8 = telebot.types.InlineKeyboardButton(
+                text=listVashaSumma[langNumber1[0]] + str(i['count_deti']*45000) + 'тг', callback_data='balans')
+            if(i['balans'] == str(i['count_deti']*45000)):
+                keyboard.add(callback_button8)
+                keyboard.add(callback_button2)
+                keyboard.row(callback_button1, callback_button3, callback_button5)
+                keyboard.add(callback_button7)
+                keyboard.add(callback_button4)
+            else:
+                keyboard.add(callback_button8)
+                keyboard.add(callback_button6)
+                keyboard.add(callback_button2)
+                keyboard.row(callback_button1, callback_button3, callback_button5)
+                keyboard.add(callback_button7)
+                keyboard.add(callback_button4)
+            if(i['lok'] == 'dengi_count'):
+                bot.send_message(message.chat.id, "<b>Деньги</b>\n" +
+                                listKratnuyu[langNumber1[0]] + i[i['lok']]['type_nominal'] + "тг", reply_markup=keyboard, parse_mode="HTML")
+            elif(i['lok'] == 'sportmaster_count'):
+                bot.send_photo(message.chat.id,
+                            photo=open('img/sport.jpg', 'rb'), caption="<b>Спортмастер</b>\n" + listKratnuyu[langNumber1[0]] + i[i['lok']]['type_nominal'] + "тг\n" + listCountKol[langNumber1[0]], parse_mode="HTML", reply_markup=keyboard)
+            elif(i['lok'] == 'mechta_count'):
+                bot.send_photo(message.chat.id,
+                            photo=open('img/mechta.png', 'rb'), caption="<b>Меchta</b>\n" + listKratnuyu[langNumber1[0]] + i[i['lok']]['type_nominal'] + "тг\n" + listCountKol[langNumber1[0]], parse_mode="HTML", reply_markup=keyboard)
+            elif(i['lok'] == 'lcwaikiki_count'):
+                bot.send_photo(message.chat.id,
+                            photo=open('img/lcwaikiki.png', 'rb'), caption="<b>LCWaikiki</b>\n" + listKratnuyu[langNumber1[0]] + i[i['lok']]['type_nominal'] + "тг\n" + listCountKol[langNumber1[0]], parse_mode="HTML", reply_markup=keyboard)
+            elif(i['lok'] == 'abdi_count'):
+                bot.send_photo(message.chat.id,
+                            photo=open('img/adbi.jpg', 'rb'), caption="<b>ABDI</b>\n" + listKratnuyu[langNumber1[0]] + i[i['lok']]['type_nominal'] + "тг\n" + listCountKol[langNumber1[0]], parse_mode="HTML", reply_markup=keyboard)
 
 
 def get_cart(message):
-    keyboard = telebot.types.ReplyKeyboardMarkup(
-        resize_keyboard=True, row_width=1, one_time_keyboard=True)
-    callback_button2 = telebot.types.KeyboardButton(listMoney[langNumber1[0]])
-    callback_button1 = telebot.types.KeyboardButton('Сертификаты📃')
-    callback_button5 = telebot.types.KeyboardButton(listPart[langNumber1[0]])
-    # callback_button4 = telebot.types.KeyboardButton('Корзина'+'\U0001F5D1')
-    callback_button3 = telebot.types.KeyboardButton(
-        listChangeLang[langNumber1[0]]+'🔠')
-    keyboard.add(callback_button2, callback_button1,
-                 callback_button5, callback_button3)
-    bot.send_message(message.chat.id, '<b>' + listCart[langNumber1[0]] + str(
-        user_data['balans'])+'тг</b>\n', reply_markup=keyboard, parse_mode="HTML")
+    try:
+        keyboard = telebot.types.ReplyKeyboardMarkup(
+            resize_keyboard=True, row_width=1, one_time_keyboard=True)
+        callback_button2 = telebot.types.KeyboardButton(listMoney[langNumber1[0]])
+        callback_button1 = telebot.types.KeyboardButton('Сертификаты📃')
+        callback_button5 = telebot.types.KeyboardButton(listPart[langNumber1[0]])
+        # callback_button4 = telebot.types.KeyboardButton('Корзина'+'\U0001F5D1')
+        callback_button3 = telebot.types.KeyboardButton(
+            listChangeLang[langNumber1[0]]+'🔠')
+        keyboard.add(callback_button2, callback_button1,
+                    callback_button5, callback_button3)
+        bot.send_message(message.chat.id, '<b>' + listCart[langNumber1[0]] + get_balans(message)+'тг</b>\n', reply_markup=keyboard, parse_mode="HTML")
+    except Exception as ex:
+        print(ex)
 
-
+def get_balans(message):
+    with open('result.json', encoding='utf-8') as files:
+            data = json.load(files)
+    for i in data:
+        if i['id']==str(message.chat.id):
+            return i['balans']
 def get_nominal(message):
+    with open('result.json', encoding='utf-8') as file:
+        data = json.load(file)
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
     callback_button1 = telebot.types.InlineKeyboardButton(
         text="10000тг", callback_data='10000')
@@ -294,8 +270,10 @@ def get_nominal(message):
         text='15000тг', callback_data='15000')
     callback_button3 = telebot.types.InlineKeyboardButton(
         text='25000тг', callback_data='25000')
-    callback_button4 = telebot.types.InlineKeyboardButton(
-        text=listOstatok[langNumber1[0]] + user_data['balans'] + 'тг', callback_data='balans')
+    for i in data:
+        if(i['id']==str(message.chat.id)):
+            callback_button4 = telebot.types.InlineKeyboardButton(
+                text=listOstatok[langNumber1[0]] + i['balans'] + 'тг', callback_data='balans')
     callback_button5 = telebot.types.InlineKeyboardButton(
         text=listBack[langNumber1[0]], callback_data='nazad')
     callback_button6 = telebot.types.InlineKeyboardButton(
@@ -357,7 +335,7 @@ def get_korzina(message):
     keyboard.row(callback_button3)
     keyboard.row(callback_button2)
     keyboard.row(callback_button4)
-    bot.send_message(message.chat.id, get_info_only_exists(),
+    bot.send_message(message.chat.id, get_info_only_exists(message),
                      reply_markup=keyboard, parse_mode="HTML")
 
 
@@ -383,6 +361,9 @@ def get_delete(message):
     bot.send_message(
         message.chat.id, listChoose[langNumber1[0]], reply_markup=keyboard)
 
+def save_fo(info):
+    with open('result.json', "w", encoding='utf8') as f:
+        f.write(json.dumps(info, ensure_ascii=False))
 
 @bot.callback_query_handler(func=lambda call: True)
 def callbackLang(call):
@@ -405,19 +386,18 @@ def callbackLang(call):
                 get_phone_number(call.message)
             elif call.data == "d" or call.data == "n" or call.data == "i" or call.data == "j":
                 if call.data == 'd':
-                    b = get_count()
-                    user_data['balans'] = b
-                    # print(user_data)
-                    if(user_data['accept'] == False):
-                        user_data['accept'] = True
-                        user_data['sended'] = False
-                        # clear nuzhno zavtra
+                    with open('result.json', encoding='utf-8') as file:
+                        data = json.load(file)
+                    for i in data:
+                        if(i['id']==str(call.message.chat.id)):
+                            i['accept'] = True
+                    with open('result.json', "w", encoding='utf8') as f:
+                        f.write(json.dumps(data, ensure_ascii=False))
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None)
-                    save_data(user_data)
                     bot.delete_message(call.message.chat.id,
                                        call.message.message_id)
-                    get_cart(call.message)
+                    get_bank(call.message)
                 elif call.data == 'n':
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None)
@@ -429,19 +409,18 @@ def callbackLang(call):
                         call.message.chat.id, get_help_by_filial(find_city(), call.message), reply_markup=keyboard)
 
                 elif call.data == 'i':
-                    b = get_count()
-                    user_data['balans'] = b
-                    # print(user_data)
-                    if(user_data['accept'] == False):
-                        user_data['accept'] = True
-                        user_data['sended'] = False
-                        # clear nuzhno zavtra
+                    with open('result.json', encoding='utf-8') as file:
+                        data = json.load(file)
+                    for i in data:
+                        if(i['id']==str(call.message.chat.id)):
+                            i['accept'] = True
+                    with open('result.json', "w", encoding='utf8') as f:
+                        f.write(json.dumps(data, ensure_ascii=False))
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None)
-                    save_data(user_data)
                     bot.delete_message(call.message.chat.id,
                                        call.message.message_id)
-                    get_cart(call.message)
+                    get_bank(call.message)
                 elif call.data == 'j':
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None)
@@ -480,54 +459,71 @@ def callbackLang(call):
                         call.from_user.id, call.message.message_id, reply_markup=None)
                     info_data['in_korazina']
             elif call.data == "meloman" or call.data == "marwin" or call.data == "lcwaikiki" or call.data == 'abdi':
-
+                with open('result.json', encoding='utf-8') as file:
+                        data = json.load(file)
                 if call.data == 'meloman':
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None)
                     b = 'sportmaster_count'
-                    user_data['lok'] = b
+                    for i in data:
+                        if(i['id']==str(call.message.chat.id)):
+                            i['lok'] = b
+                    save_fo(data)
                     get_nominal(call.message)
                 elif call.data == 'marwin':
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None)
                     b = 'mechta_count'
-                    user_data['lok'] = b
+                    for i in data:
+                        if(i['id']==str(call.message.chat.id)):
+                            i['lok'] = b
+                    save_fo(data)
                     get_nominal(call.message)
                 elif call.data == 'lcwaikiki':
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None)
                     b = 'lcwaikiki_count'
-                    user_data['lok'] = b
+                    for i in data:
+                        if(i['id']==str(call.message.chat.id)):
+                            i['lok'] = b
+                    save_fo(data)
                     get_nominal(call.message)
                 elif call.data == 'abdi':
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None)
                     b = 'abdi_count'
-                    user_data['lok'] = b
+                    for i in data:
+                        if(i['id']==str(call.message.chat.id)):
+                            i['lok'] = b
+                    save_fo(data)
                     get_nominal(call.message)
             elif call.data == "soglasitsya" or call.data == "delete" or call.data == "redaktirovat":
                 if call.data == 'soglasitsya':
-                    if(info_data['type']=='sert'):
-                        if(int(user_data['balans']) == 0):  
-                            get_sogl(call.message)
+                    with open('result.json', encoding='utf-8') as file:
+                        data = json.load(file)
+                    for i in data:
+                        if i['id']==str(call.message.chat.id) and i['type']=='sert':
+                            if(int(i['balans'])==0):
+                                get_sogl(call.message)
+                                bot.delete_message(call.message.chat.id,
+                                        call.message.message_id)
+                                bot.edit_message_reply_markup(
+                                    call.from_user.id, call.message.message_id, reply_markup=None)
+                            else:
+                                bot.send_message(
+                                    call.message.chat.id, listVybrana[langNumber1[0]] + user_data['balans'])
+                        elif i['id']==str(call.message.chat.id) and i['type']=='chast':
                             bot.delete_message(call.message.chat.id,
                                         call.message.message_id)
+                            i['dengi_count']['count_5000'] = i['dengi_count']['count_5000'] + int(
+                                int(i['balans'])/5000)
+                            i['dengi'] = i['dengi'] + int(i['balans'])
+                            i['balans'] = "0"
+                            save_fo(data)
+                            get_sogl(call.message)
                             bot.edit_message_reply_markup(
                                 call.from_user.id, call.message.message_id, reply_markup=None)
-                        else:
-                            bot.send_message(
-                                call.message.chat.id, listVybrana[langNumber1[0]] + user_data['balans'])
-                    else:
-                        bot.delete_message(call.message.chat.id,
-                                       call.message.message_id)
-                        user_data['dengi_count']['count_5000'] = user_data['dengi_count']['count_5000'] + int(
-                            int(user_data['balans'])/5000)
-                        user_data['dengi'] = user_data['dengi'] + \
-                            int(user_data['balans'])
-                        user_data['balans'] = "0"
-                        get_sogl(call.message)
-                        bot.edit_message_reply_markup(
-                            call.from_user.id, call.message.message_id, reply_markup=None)
+
                 elif call.data == 'delete':
                     clear_cart(call.message)
                     bot.edit_message_reply_markup(
@@ -572,209 +568,61 @@ def callbackLang(call):
                         call.from_user.id, call.message.message_id, reply_markup=None)
                     get_korzina(call.message)
             elif call.data == "plus" or call.data == "minus" or call.data == 'enough' or call.data == 'delete_full' or call.data == 'korzina_add_and_delete' or call.data == 'get_all_babki':
+                with open('result.json', encoding='utf-8') as file:
+                    data = json.load(file)
                 if call.data == 'plus':
                     add_plus(call.message, call)
-                    get_all_func(call.message)
-                    if(user_data[user_data['lok']]['type_nominal'] == "5000"):
-                        price = str(user_data[user_data['lok']]
-                                    ['count_5000'] * 5000) + 'тг'
-                        shtuk = str(user_data[user_data['lok']]['count_5000'])
-                    elif(user_data[user_data['lok']]['type_nominal'] == "10000"):
-                        price = str(user_data[user_data['lok']]
-                                    ['count_10000'] * 10000) + 'тг'
-                        shtuk = str(user_data[user_data['lok']]['count_10000'])
-                    elif(user_data[user_data['lok']]['type_nominal'] == "15000"):
-                        price = str(user_data[user_data['lok']]
-                                    ['count_15000'] * 15000) + 'тг'
-                        shtuk = str(user_data[user_data['lok']]['count_15000'])
-                    elif(user_data[user_data['lok']]['type_nominal'] == "25000"):
-                        price = str(user_data[user_data['lok']]
-                                    ['count_25000'] * 25000) + 'тг'
-                        shtuk = str(user_data[user_data['lok']]['count_25000'])
-                    elif(user_data[user_data['lok']] == user_data['dengi_count']):
-                        if(user_data[user_data['lok']]['type_nominal'] == "5000"):
-                            price = str(
-                                user_data[user_data['lok']]['count_5000'] * 5000) + 'тг'
-                            shtuk = str(
-                                user_data[user_data['lok']]['count_5000'])
-                    keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
-                    callback_button1 = telebot.types.InlineKeyboardButton(
-                        text='➕', callback_data='plus',)
-                    callback_button2 = telebot.types.InlineKeyboardButton(
-                        text=shtuk + 'шт.- ' + price, callback_data='howmany')
-                    callback_button3 = telebot.types.InlineKeyboardButton(
-                        text='➖', callback_data='minus')
-                    callback_button4 = telebot.types.InlineKeyboardButton(
-                        text=listTagyKosu[langNumber1[0]], callback_data='enough')
-                    callback_button5 = telebot.types.InlineKeyboardButton(
-                        text='❌', callback_data='delete_full')
-                    callback_button6 = telebot.types.InlineKeyboardButton(
-                        text=listOstatok[langNumber1[0]] + user_data['balans'] + "тг", callback_data='balans')
-                    callback_button7 = telebot.types.InlineKeyboardButton(
-                        text=listAccept[langNumber1[0]], callback_data='soglasitsya')
-                    callback_button8 = telebot.types.InlineKeyboardButton(
-                        text=listVashaSumma[langNumber1[0]] + get_count() + 'тг', callback_data='balans')
-                    if(user_data['balans'] == get_count()):
-                        keyboard.add(callback_button8)
-                        keyboard.add(callback_button2)
-                        keyboard.row(callback_button1,
-                                     callback_button3, callback_button5)
-                        keyboard.add(callback_button7)
-                        keyboard.add(callback_button4)
-                    else:
-                        keyboard.add(callback_button8)
-                        keyboard.add(callback_button6)
-                        keyboard.add(callback_button2)
-                        keyboard.row(callback_button1,
-                                     callback_button3, callback_button5)
-                        keyboard.add(callback_button7)
-                        keyboard.add(callback_button4)
-                    bot.edit_message_reply_markup(
-                        call.from_user.id, call.message.message_id, reply_markup=keyboard)
-                    get_all_func(call.message)
                 elif call.data == 'minus':
                     delete_minus(call.message, call)
-                    get_all_func(call.message)
-                    if(user_data[user_data['lok']]['type_nominal'] == "5000"):
-                        price = str(user_data[user_data['lok']]
-                                    ['count_5000'] * 5000) + 'тг'
-                        shtuk = str(user_data[user_data['lok']]['count_5000'])
-                    elif(user_data[user_data['lok']]['type_nominal'] == "10000"):
-                        price = str(user_data[user_data['lok']]
-                                    ['count_10000'] * 10000) + 'тг'
-                        shtuk = str(user_data[user_data['lok']]['count_10000'])
-                    elif(user_data[user_data['lok']]['type_nominal'] == "15000"):
-                        price = str(user_data[user_data['lok']]
-                                    ['count_15000'] * 15000) + 'тг'
-                        shtuk = str(user_data[user_data['lok']]['count_15000'])
-                    elif(user_data[user_data['lok']]['type_nominal'] == "25000"):
-                        price = str(user_data[user_data['lok']]
-                                    ['count_25000'] * 25000) + 'тг'
-                        shtuk = str(user_data[user_data['lok']]['count_25000'])
-                    elif(user_data[user_data['lok']] == user_data['dengi_count']):
-                        if(user_data[user_data['lok']]['type_nominal'] == "5000"):
-                            price = str(
-                                user_data[user_data['lok']]['count_5000'] * 5000) + 'тг'
-                            shtuk = str(
-                                user_data[user_data['lok']]['count_5000'])
-
-                    keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
-                    callback_button1 = telebot.types.InlineKeyboardButton(
-                        text='➕', callback_data='plus',)
-                    callback_button2 = telebot.types.InlineKeyboardButton(
-                        text=shtuk + 'шт.- ' + price, callback_data='howmany')
-                    callback_button3 = telebot.types.InlineKeyboardButton(
-                        text='➖', callback_data='minus')
-                    callback_button4 = telebot.types.InlineKeyboardButton(
-                        text=listTagyKosu[langNumber1[0]], callback_data='enough')
-                    callback_button5 = telebot.types.InlineKeyboardButton(
-                        text='❌', callback_data='delete_full')
-                    callback_button6 = telebot.types.InlineKeyboardButton(
-                        text=listOstatok[langNumber1[0]] + user_data['balans'] + "тг", callback_data='balans')
-                    callback_button7 = telebot.types.InlineKeyboardButton(
-                        text=listAccept[langNumber1[0]], callback_data='soglasitsya')
-                    callback_button8 = telebot.types.InlineKeyboardButton(
-                        text=listVashaSumma[langNumber1[0]] + get_count() + 'тг', callback_data='balans')
-                    if(user_data['balans'] == get_count()):
-                        keyboard.add(callback_button8)
-                        keyboard.add(callback_button2)
-                        keyboard.row(callback_button1,
-                                     callback_button3, callback_button5)
-                        keyboard.add(callback_button7)
-                        keyboard.add(callback_button4)
-                    else:
-                        keyboard.add(callback_button8)
-                        keyboard.add(callback_button6)
-                        keyboard.add(callback_button2)
-                        keyboard.row(callback_button1,
-                                     callback_button3, callback_button5)
-                        keyboard.add(callback_button7)
-                        keyboard.add(callback_button4)
-                    bot.edit_message_reply_markup(
-                        call.from_user.id, call.message.message_id, reply_markup=keyboard)
                 elif call.data == 'enough':
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None)
                     bot.delete_message(call.message.chat.id,
                                        call.message.message_id)
-                    if(user_data['lok'] == 'sportmaster_count'):
-                        bot.delete_message(
-                            call.message.chat.id, call.message.message_id-1)
-                        if(info_data['in_korazina'] == False):
+                    with open('result.json', encoding='utf-8') as file:
+                        data = json.load(file)
+                    for i in data:
+                        if i['id'] == str(call.message.chat.id) and i['lok'] == 'sportmaster_count':
+                            bot.delete_message(
+                                call.message.chat.id, call.message.message_id-1)
                             get_sertificat(call.message)
-                        elif(info_data['in_korazina'] == True):
-                            get_delete(call.message)
-                    elif(user_data['lok'] == 'mechta_count'):
-                        bot.delete_message(
-                            call.message.chat.id, call.message.message_id-1)
-                        if(info_data['in_korazina'] == False):
+                        elif i['id'] == str(call.message.chat.id) and i['lok'] == 'mechta_count':
+                            bot.delete_message(
+                                call.message.chat.id, call.message.message_id-1)
                             get_sertificat(call.message)
-                        elif(info_data['in_korazina'] == True):
-                            get_delete(call.message)
-                    elif(user_data['lok'] == 'lcwaikiki_count'):
-                        bot.delete_message(
-                            call.message.chat.id, call.message.message_id-1)
-                        if(info_data['in_korazina'] == False):
+                        elif i['id'] == str(call.message.chat.id) and i['lok'] == 'lcwaikiki_count':
+                            bot.delete_message(
+                                call.message.chat.id, call.message.message_id-1)
                             get_sertificat(call.message)
-                        elif(info_data['in_korazina'] == True):
-                            get_delete(call.message)
-                    elif(user_data['lok'] == 'dengi_count'):
-                        bot.delete_message(
-                            call.message.chat.id, call.message.message_id-1)
-                        if(info_data['in_korazina'] == False):
-                            get_magazin(call.message)
-                        elif(info_data['in_korazina'] == True):
-                            get_delete(call.message)
-                    elif(user_data['lok'] == 'abdi_count'):
-                        bot.delete_message(
-                            call.message.chat.id, call.message.message_id-1)
-                        if(info_data['in_korazina'] == False):
+                        elif i['id'] == str(call.message.chat.id) and i['lok'] == 'abdi_count':
+                            bot.delete_message(
+                                call.message.chat.id, call.message.message_id-1)
                             get_sertificat(call.message)
-                        elif(info_data['in_korazina'] == True):
-                            get_delete(call.message)
                 elif call.data == 'delete_full':
                     bot.delete_message(call.message.chat.id,
                                        call.message.message_id)
-                    if(user_data['lok'] == 'dengi_count'):
-                        user_data['dengi'] = 0
-                        if(user_data[user_data['lok']]['type_nominal'] == "5000"):
-                            user_data['balans'] = int(
-                                user_data['balans']) + user_data[user_data['lok']]['count_5000']*5000
-                            user_data[user_data['lok']]['count_5000'] = 0
-
-                        elif(user_data[user_data['lok']]['type_nominal'] == "10000"):
-                            user_data['balans'] = int(
-                                user_data['balans']) + user_data[user_data['lok']]['count_10000']*10000
-                            user_data[user_data['lok']]['count_10000'] = 0
-                        elif(user_data[user_data['lok']]['type_nominal'] == "15000"):
-                            user_data['balans'] = int(
-                                user_data['balans']) + user_data[user_data['lok']]['count_15000']*15000
-                            user_data[user_data['lok']]['count_15000'] = 0
-                        elif(user_data[user_data['lok']]['type_nominal'] == "25000"):
-                            user_data['balans'] = int(
-                                user_data['balans']) + user_data[user_data['lok']]['count_25000']*25000
-                            user_data[user_data['lok']]['count_25000'] = 0
-                        save_data(user_data)
-                        get_cart(call.message)
-                    else:
-                        if(user_data[user_data['lok']]['type_nominal'] == "5000"):
-                            user_data['balans'] = int(
-                                user_data['balans']) + user_data[user_data['lok']]['count_5000']*5000
-                            user_data[user_data['lok']]['count_5000'] = 0
-                        if(user_data[user_data['lok']]['type_nominal'] == "10000"):
-                            user_data['balans'] = int(
-                                user_data['balans']) + user_data[user_data['lok']]['count_10000']*10000
-                            user_data[user_data['lok']]['count_10000'] = 0
-                        elif(user_data[user_data['lok']]['type_nominal'] == "15000"):
-                            user_data['balans'] = int(
-                                user_data['balans']) + user_data[user_data['lok']]['count_15000']*15000
-                            user_data[user_data['lok']]['count_15000'] = 0
-                        elif(user_data[user_data['lok']]['type_nominal'] == "25000"):
-                            user_data['balans'] = int(
-                                user_data['balans']) + user_data[user_data['lok']]['count_25000']*25000
-                            user_data[user_data['lok']]['count_25000'] = 0
-                        save_data(user_data)
-                        get_cart(call.message)
+                    with open('result.json', encoding='utf-8') as file:
+                        data = json.load(file)
+                    for i in data:
+                        if i['id'] == str(call.message.chat.id):
+                            if(i[i['lok']]['type_nominal'] == "5000"):
+                                i['balans'] = str(int(
+                                    i['balans']) + i[i['lok']]['count_5000']*5000)
+                                i[i['lok']]['count_5000'] = 0
+                            if(i[i['lok']]['type_nominal'] == "10000"):
+                                i['balans'] = str(int(
+                                    i['balans']) + i[i['lok']]['count_10000']*10000)
+                                i[i['lok']]['count_10000'] = 0
+                            elif(i[i['lok']]['type_nominal'] == "15000"):
+                                i['balans'] = str(int(
+                                    i['balans']) + i[i['lok']]['count_15000']*15000)
+                                i[i['lok']]['count_15000'] = 0
+                            elif(i[i['lok']]['type_nominal'] == "25000"):
+                                i['balans'] = str(int(
+                                    i['balans']) + i[i['lok']]['count_25000']*25000)
+                                i[i['lok']]['count_25000'] = 0
+                    save_fo(data)
+                    get_sertificat(call.message)    
                 elif call.data == 'korzina_add_and_delete':
                     bot.delete_message(call.message.chat.id,
                                        call.message.message_id)
@@ -785,7 +633,6 @@ def callbackLang(call):
                     user_data['dengi'] = user_data['dengi'] + \
                         int(user_data['balans'])
                     user_data['balans'] = "0"
-                    get_all_func(call.message)
                     if(user_data[user_data['lok']]['type_nominal'] == "10000"):
                         price = str(int(user_data[user_data['lok']]
                                     ['count_10000'] * 10000)) + 'тг'
@@ -837,119 +684,196 @@ def callbackLang(call):
 
             elif call.data == "yes" or call.data == "no":
                 if call.data == 'yes':
-                    user_data['save'] = True
-                    user_data['dengi'] = int(
-                        user_data['balans']) + user_data['dengi']
-                    user_data['balans'] = '0'
-                    user_data['count_deti'] = get_count_deti()
-                    del user_data['mechta_count']['type_nominal']
-                    del user_data['lcwaikiki_count']['type_nominal']
-                    del user_data['sportmaster_count']['type_nominal']
-                    del user_data['abdi_count']['type_nominal']
-                    save_data(user_data)
-                    bot.edit_message_reply_markup(
-                        call.from_user.id, call.message.message_id, reply_markup=None)
-                    bot.answer_callback_query(
-                        callback_query_id=call.id, text=listGoodByeSuccess[langNumber1[0]])
-                    get_saved_person_for_excel()
-                    keyboard = telebot.types.ReplyKeyboardMarkup(
-                        resize_keyboard=True)
-                    callback_button1 = telebot.types.KeyboardButton(
-                        ChecklastMess[langNumber1[0]])
-                    keyboard.add(callback_button1)
-                    bot.send_message(
-                        call.message.chat.id, listGoodBye[langNumber1[0]], reply_markup=keyboard)
+                    with open('result.json', encoding='utf-8') as file:
+                        data = json.load(file)
+                    for i in data:
+                        if(i['id']==str(call.message.chat.id)):
+                            i['save'] = True
+                            i['dengi'] = int(
+                                i['balans']) + i['dengi']
+                            i['balans'] = '0'
+                            counts = {
+                                'sportmaster_count': {"Номанал 5000": i['sportmaster_count']['count_5000'],"Номанал 10000": i['sportmaster_count']['count_10000'], "Номанал 15000": i['sportmaster_count']['count_15000'], "Номанал 25000": i['sportmaster_count']['count_25000']},
+                                'mechta_count': {"Номанал 5000": i['mechta_count']['count_5000'],"Номанал 10000": i['mechta_count']['count_10000'], "Номанал 15000": i['mechta_count']['count_15000'], "Номанал 25000": i['mechta_count']['count_25000']},
+                                'lcwaikiki_count': {"Номанал 5000": i['lcwaikiki_count']['count_5000'],"Номанал 10000": i['lcwaikiki_count']['count_10000'], "Номанал 15000": i['lcwaikiki_count']['count_15000'], "Номанал 25000": i['lcwaikiki_count']['count_25000']},
+                                'abdi_count': {"Номанал 5000": i['abdi_count']['count_5000'],"Номанал 10000": i['abdi_count']['count_10000'], "Номанал 15000": i['abdi_count']['count_15000'], "Номанал 25000": i['abdi_count']['count_25000']},
+                            }
+                            i['itogo'] = i['count_deti']*45000
+                            del i['mechta_count']['type_nominal']
+                            del i['lcwaikiki_count']['type_nominal']
+                            del i['sportmaster_count']['type_nominal']
+                            del i['abdi_count']['type_nominal']
+                            with open('result.json', "w", encoding='utf8') as f:
+                                f.write(json.dumps(data, ensure_ascii=False))
+                            bot.edit_message_reply_markup(
+                                call.from_user.id, call.message.message_id, reply_markup=None)
+                            bot.answer_callback_query(
+                                callback_query_id=call.id, text=listGoodByeSuccess[langNumber1[0]])
+                            get_saved_person_for_excel(call.message,counts)
+                            keyboard = telebot.types.ReplyKeyboardMarkup(
+                                resize_keyboard=True)
+                            callback_button1 = telebot.types.KeyboardButton(
+                                ChecklastMess[langNumber1[0]])
+                            keyboard.add(callback_button1)
+                            bot.send_message(
+                                call.message.chat.id, listGoodBye[langNumber1[0]], reply_markup=keyboard)
+                    with open('result.json', "w", encoding='utf8') as f:
+                        f.write(json.dumps(data, ensure_ascii=False))
                 elif call.data == 'no':
+                    with open('result.json', encoding='utf-8') as file:
+                        data = json.load(file)
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None)
                     bot.answer_callback_query(
                         callback_query_id=call.id, text=listUnSuccess[langNumber1[0]]+'\U0001F614')
-                    user_data['balans'] = str(int(user_data['balans']) + user_data['dengi'] +
-                                              + user_data['sportmaster_count']['count_10000'] * 10000
-                                              + user_data['mechta_count']['count_10000'] * 10000
-                                              + user_data['lcwaikiki_count']['count_10000'] * 10000
-                                              + user_data['abdi_count']['count_10000'] * 10000
-                                              + user_data['sportmaster_count']['count_15000'] * 15000
-                                              + user_data['mechta_count']['count_15000'] * 15000
-                                              + user_data['lcwaikiki_count']['count_15000'] * 15000
-                                              + user_data['abdi_count']['count_15000'] * 15000
-                                              + user_data['sportmaster_count']['count_25000'] * 25000
-                                              + user_data['mechta_count']['count_25000'] * 25000
-                                              + user_data['lcwaikiki_count']['count_25000'] * 25000
-                                              + user_data['abdi_count']['count_25000'] * 25000
-                                              + user_data['sportmaster_count']['count_5000'] * 5000
-                                              + user_data['mechta_count']['count_5000'] * 5000
-                                              + user_data['lcwaikiki_count']['count_5000'] * 5000
-                                              + user_data['abdi_count']['count_5000'] * 5000
-                                              )
-                    user_data['dengi'] = 0
-                    user_data['dengi_count']['count_5000'] = 0
-                    user_data['dengi_count']['count_10000'] = 0
-                    user_data['dengi_count']['count_15000'] = 0
-                    user_data['dengi_count']['count_25000'] = 0
-                    user_data['sportmaster_count']['count_5000'] = 0
-                    user_data['mechta_count']['count_5000'] = 0
-                    user_data['lcwaikiki_count']['count_5000'] = 0
-                    user_data['abdi_count']['count_5000'] = 0
-                    user_data['sportmaster_count']['count_10000'] = 0
-                    user_data['mechta_count']['count_10000'] = 0
-                    user_data['lcwaikiki_count']['count_10000'] = 0
-                    user_data['abdi_count']['count_10000'] = 0
-                    user_data['sportmaster_count']['count_15000'] = 0
-                    user_data['mechta_count']['count_15000'] = 0
-                    user_data['lcwaikiki_count']['count_15000'] = 0
-                    user_data['abdi_count']['count_15000'] = 0
-                    user_data['sportmaster_count']['count_25000'] = 0
-                    user_data['mechta_count']['count_25000'] = 0
-                    user_data['lcwaikiki_count']['count_25000'] = 0
-                    user_data['abdi_count']['count_25000'] = 0
-                    save_data(user_data)
+                    for i in data:
+                        if(i['id'] == str(call.message.chat.id)):
+                            i['balans'] = str(int(i['balans']) + i['dengi'] +
+                                                    + i['sportmaster_count']['count_10000'] * 10000
+                                                    + i['mechta_count']['count_10000'] * 10000
+                                                    + i['lcwaikiki_count']['count_10000'] * 10000
+                                                    + i['abdi_count']['count_10000'] * 10000
+                                                    + i['sportmaster_count']['count_15000'] * 15000
+                                                    + i['mechta_count']['count_15000'] * 15000
+                                                    + i['lcwaikiki_count']['count_15000'] * 15000
+                                                    + i['abdi_count']['count_15000'] * 15000
+                                                    + i['sportmaster_count']['count_25000'] * 25000
+                                                    + i['mechta_count']['count_25000'] * 25000
+                                                    + i['lcwaikiki_count']['count_25000'] * 25000
+                                                    + i['abdi_count']['count_25000'] * 25000
+                                                    + i['sportmaster_count']['count_5000'] * 5000
+                                                    + i['mechta_count']['count_5000'] * 5000
+                                                    + i['lcwaikiki_count']['count_5000'] * 5000
+                                                    + i['abdi_count']['count_5000'] * 5000
+                                                    )
+                            i['dengi'] = 0
+                            i['dengi_count']['count_5000'] = 0
+                            i['dengi_count']['count_10000'] = 0
+                            i['dengi_count']['count_15000'] = 0
+                            i['dengi_count']['count_25000'] = 0
+                            i['sportmaster_count']['count_5000'] = 0
+                            i['mechta_count']['count_5000'] = 0
+                            i['lcwaikiki_count']['count_5000'] = 0
+                            i['abdi_count']['count_5000'] = 0
+                            i['sportmaster_count']['count_10000'] = 0
+                            i['mechta_count']['count_10000'] = 0
+                            i['lcwaikiki_count']['count_10000'] = 0
+                            i['abdi_count']['count_10000'] = 0
+                            i['sportmaster_count']['count_15000'] = 0
+                            i['mechta_count']['count_15000'] = 0
+                            i['lcwaikiki_count']['count_15000'] = 0
+                            i['abdi_count']['count_15000'] = 0
+                            i['sportmaster_count']['count_25000'] = 0
+                            i['mechta_count']['count_25000'] = 0
+                            i['lcwaikiki_count']['count_25000'] = 0
+                            i['abdi_count']['count_25000'] = 0
+                    save_fo(data)
                     get_cart(call.message)
             elif call.data == "rus" or call.data == "kz":
+                with open('result.json', encoding='utf-8') as file:
+                    data = json.load(file)
                 if call.data == "rus":
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None,)
-                    user_data['lang'] = listLang[0]
-                    langNumber1[0] = 0
-                    bot.answer_callback_query(
-                        callback_query_id=call.id, text=listLangChange[langNumber1[0]] + '✅')
-                    get_cart(call.message)
+                    for i in data:
+                        if(i['id'] == str(call.message.chat.id)):
+                            i['lang'] = listLang[0]
+                            langNumber1[0] = 0
+                            bot.answer_callback_query(
+                                callback_query_id=call.id, text=listLangChange[langNumber1[0]] + '✅')
+                            get_cart(call.message)
                 elif call.data == "kz":
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None)
-                    user_data['lang'] = listLang[1]
-                    langNumber1[0] = 1
-                    bot.answer_callback_query(
-                        callback_query_id=call.id, text=listLangChange[langNumber1[0]] + '✅')
-                    get_cart(call.message)
+                    for i in data:
+                        if(i['id'] == str(call.message.chat.id)):
+                            i['lang'] = listLang[1]
+                            langNumber1[0] = 1
+                            bot.answer_callback_query(
+                                callback_query_id=call.id, text=listLangChange[langNumber1[0]] + '✅')
+                            get_cart(call.message)
             elif call.data == "5000" or call.data == "10000" or call.data == "15000" or call.data == "25000" or call.data == "5000":
+                with open('result.json', encoding='utf-8') as file:
+                    data = json.load(file)
                 if call.data == "10000":
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None,)
-                    user_data[user_data['lok']]['type_nominal'] = "10000"
-                    save_data(user_data)
+                    for i in data:
+                        if i['id']==str(call.message.chat.id):
+                            i[i['lok']]['type_nominal'] = "10000"
+                    save_fo(data)
                     add_and_delete(call.message)
                 elif call.data == "15000":
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None,)
-                    user_data[user_data['lok']]["type_nominal"] = "15000"
-                    save_data(user_data)
+                    for i in data:
+                        if i['id']==str(call.message.chat.id):
+                            i[i['lok']]['type_nominal'] = "15000"
+                    save_fo(data)
                     add_and_delete(call.message)
                 elif call.data == "25000":
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None,)
-                    user_data[user_data['lok']]["type_nominal"] = "25000"
-                    save_data(user_data)
+                    for i in data:
+                        if i['id']==str(call.message.chat.id):
+                            i[i['lok']]['type_nominal'] = "25000"
+                    save_fo(data)
                     add_and_delete(call.message)
                 elif call.data == "5000":
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None,)
-                    user_data[user_data['lok']]["type_nominal"] = "5000"
-                    save_data(user_data)
+                    for i in data:
+                        if i['id']==str(call.message.chat.id):
+                            i[i['lok']]['type_nominal'] = "5000"
+                    save_fo(data)
                     add_and_delete(call.message)
+            elif call.data == "kaspi" or call.data == "halyk" or call.data == "another":
+                with open('result.json', encoding='utf-8') as file:
+                    data = json.load(file)
+                if call.data == "kaspi":
+                    bot.edit_message_reply_markup(
+                                        call.from_user.id, call.message.message_id, reply_markup=None)
+                    for i in data:
+                        if i['id']==str(call.message.chat.id):
+                            i['cart_type'] = "Каспи Банк"
+                    save_fo(data)
+                    get_cart(call.message)
+                if call.data == "halyk":
+                    bot.edit_message_reply_markup(
+                                        call.from_user.id, call.message.message_id, reply_markup=None)
+                    for i in data:
+                        if i['id']==str(call.message.chat.id):
+                            i['cart_type'] = "Народный Банк"
+                    save_fo(data)
+                    get_cart(call.message)
+                if call.data == "another":
+                    bot.edit_message_reply_markup(
+                                        call.from_user.id, call.message.message_id, reply_markup=None)
+                    for i in data:
+                        if i['id']==str(call.message.chat.id):
+                            i['cart_type'] = "Другой Банк"
+                    save_fo(data)
+                    get_cart(call.message)
+                for i in data:
+                    if i['id']==str(call.message.chat.id):
+                        bot.edit_message_text(
+                            chat_id=call.message.chat.id, message_id=call.message.message_id, text=listLangDef[langNumber1[0]] +  i['cart_type'])
+        
+                    
 
         except Exception as ex:
             print(ex)
+
+def get_bank(message):
+    keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+    callback_button1 = telebot.types.InlineKeyboardButton(
+        text='Каспи Банк', callback_data='kaspi',)
+    callback_button2 = telebot.types.InlineKeyboardButton(
+        text='Народный Банк', callback_data='halyk')
+    callback_button3 = telebot.types.InlineKeyboardButton(
+        text='Другой Банк', callback_data='another')
+    keyboard.add(callback_button1,callback_button2,callback_button3)
+    bot.send_message(message.chat.id, listBankDer[langNumber1[0]], reply_markup=keyboard)
 
 
 def repeat_start(message):
@@ -958,69 +882,46 @@ def repeat_start(message):
         ChecklastMess[langNumber1[0]])
     keyboard.add(callback_button1)
     bot.send_message(
-        message.chat.id, get_info_only_exists(), reply_markup=keyboard, parse_mode="HTML")
+        message.chat.id, get_info_only_exists(message), reply_markup=keyboard, parse_mode="HTML")
     bot.send_message(
         message.chat.id, listGoodBye[langNumber1[0]], reply_markup=keyboard)
 
 
-def get_all_func(message):
-    if(user_data['lok'] == 'sportmaster_count'):
-        get_meloman_sert(message)
-    elif(user_data['lok'] == 'mechta_count'):
-        get_marwin_sert(message)
-    elif(user_data['lok'] == 'lcwaikiki_count'):
-        get_lcwaikiki_sert(message)
-    elif(user_data['lok'] == 'dengi_count'):
-        get_dengi(message)
-    elif(user_data['lok'] == 'abdi_count'):
-        get_abdi_sert(message)
-    save_data(user_data)
+
 
 
 @bot.message_handler(content_types='text')
 def message_reply(message):
     if message.text == ChecklastMess[langNumber1[0]]:
         repeat_start(message)
-    elif message.text == "Добавить":
-        print(user_data[user_data['lok']])
-        add_plus(message)
-        bot.send_message(message.chat.id, listVybrali[langNumber1[0]] +
-                         str(user_data[user_data['lok']]))
-    elif message.text == "Убрать":
-        delete_minus(message)
-        bot.send_message(message.chat.id, listVybrali[langNumber1[0]] +
-                         str(user_data[user_data['lok']]))
-    elif message.text == "Достаточно":
-        keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
-        callback_button1 = telebot.types.KeyboardButton('Назад')
-        keyboard.add(callback_button1)
-        bot.send_message(message.chat.id, 'Назад', reply_markup=keyboard)
-        if(user_data['lok'] == 'sportmaster_count'):
-            get_meloman_sert(message)
-        elif(user_data['lok'] == 'mechta_count'):
-            get_marwin_sert(message)
-        elif(user_data['lok'] == 'lcwaikiki_count'):
-            get_lcwaikiki_sert(message)
-    elif message.text == "Назад":
-        get_cart(message)
-    elif message.text == 'Каталог'+'\U0001F6D2':
-        bot.delete_message(message.chat.id, message.message_id-1)
-        get_magazin(message)
-    elif message.text == 'Корзина'+'\U0001F5D1':
-        bot.delete_message(message.chat.id, message.message_id-1)
-        get_korzina(message)
     elif message.text == listChangeLang[langNumber1[0]]+'🔠':
         change_lang(message)
     elif message.text == listMoney[langNumber1[0]]:
-        user_data['dengi'] = int(user_data['balans']) + user_data['dengi']
-        user_data['balans'] = "0"
-        save_data(user_data)
+        with open('result.json', encoding='utf-8') as file:
+            data = json.load(file)
+        for i in data:
+            if(i['id']==str(message.chat.id)):
+                i['dengi'] = int(i['balans']) + int(i['dengi'])
+                i['balans'] = "0"
+                i['type'] = 'mmoney'
+        with open('result.json', "w", encoding='utf8') as f:
+                        f.write(json.dumps(data, ensure_ascii=False))
         get_sogl(message)
     elif message.text == "Сертификаты📃":
-        info_data['type'] = 'sert'
+        with open('result.json', encoding='utf-8') as file:
+            data = json.load(file)
+        for i in data:
+            if(i['id']==str(message.chat.id)):
+                i['type'] = 'sert'
+        save_fo(data)
         get_sertificat(message)
     elif message.text == listPart[langNumber1[0]]:
-        info_data['type'] = 'chast'
+        with open('result.json', encoding='utf-8') as file:
+            data = json.load(file)
+        for i in data:
+            if(i['id']==str(message.chat.id)):
+                i['type'] = 'chast'
+        save_fo(data)
         get_sertificat(message)
     elif message.text == "Старт":
         lang(message)
@@ -1105,86 +1006,282 @@ def change_lang(message):
 
 
 def add_plus(message, call):
+    with open('result.json', encoding='utf-8') as file:
+        data = json.load(file)
     try:
-        krange = info_data['count_plus'] * \
-            int(user_data[user_data['lok']]['type_nominal'])
-        if(int(user_data['balans'])-krange > 0):
-            if(user_data[user_data['lok']]['type_nominal'] == "10000"):
-                if(int(user_data['balans']) >= 10000):
-                    info_data['count_plus'] = info_data['count_plus'] + 1
-                    user_data[user_data['lok']
-                              ]['count_10000'] = user_data[user_data['lok']]['count_10000'] + 1
+        for i in data:
+            if(i['id'] == str(message.chat.id)):
+                i['count_plus'] = 0
+                krange = i['count_plus'] * \
+                    int(i[i['lok']]['type_nominal'])
+                if(int(i['balans'])-krange > 0):
+                    if(i[i['lok']]['type_nominal'] == "10000"):
+                        if(int(i['balans']) >= 10000):
+                            i['count_plus'] = i['count_plus'] + 1
+                            i[i['lok']
+                                    ]['count_10000'] = i[i['lok']]['count_10000'] + 1
+                        else:
+                            bot.answer_callback_query(
+                                callback_query_id=call.id, text=listNotEnough[langNumber1[0]])
+                    elif(i[i['lok']]['type_nominal'] == "15000"):
+                        if(int(i['balans']) >= 15000):
+                            i['count_plus'] = i['count_plus'] + 1
+                            i[i['lok']
+                                    ]['count_15000'] = i[i['lok']]['count_15000'] + 1
+                        else:
+                            bot.answer_callback_query(
+                                callback_query_id=call.id, text=listNotEnough[langNumber1[0]])
+                    elif(i[i['lok']]['type_nominal'] == "25000"):
+                        if(int(i['balans']) >= 25000):
+                            i[i['lok']
+                                    ]['count_25000'] = i[i['lok']]['count_25000'] + 1
+                            i['count_plus'] = i['count_plus'] + 1
+                        else:
+                            bot.answer_callback_query(
+                                callback_query_id=call.id, text=listNotEnough[langNumber1[0]])
+                    elif(i[i['lok']]['type_nominal'] == "5000"):
+                        if(int(i['balans']) >= 5000):
+                            i[i['lok']
+                                    ]['count_5000'] = i[i['lok']]['count_5000'] + 1
+                            i['count_plus'] = i['count_plus'] + 1
+                        else:
+                            bot.answer_callback_query(
+                                callback_query_id=call.id, text=listNotEnough[langNumber1[0]])
                 else:
                     bot.answer_callback_query(
                         callback_query_id=call.id, text=listNotEnough[langNumber1[0]])
-            elif(user_data[user_data['lok']]['type_nominal'] == "15000"):
-                if(int(user_data['balans']) >= 15000):
-                    info_data['count_plus'] = info_data['count_plus'] + 1
-                    user_data[user_data['lok']
-                              ]['count_15000'] = user_data[user_data['lok']]['count_15000'] + 1
-                else:
-                    bot.answer_callback_query(
-                        callback_query_id=call.id, text=listNotEnough[langNumber1[0]])
-            elif(user_data[user_data['lok']]['type_nominal'] == "25000"):
-                if(int(user_data['balans']) >= 25000):
-                    user_data[user_data['lok']
-                              ]['count_25000'] = user_data[user_data['lok']]['count_25000'] + 1
-                    info_data['count_plus'] = info_data['count_plus'] + 1
-                else:
-                    bot.answer_callback_query(
-                        callback_query_id=call.id, text=listNotEnough[langNumber1[0]])
-            elif(user_data[user_data['lok']]['type_nominal'] == "5000"):
-                if(int(user_data['balans']) >= 5000):
-                    user_data[user_data['lok']
-                              ]['count_5000'] = user_data[user_data['lok']]['count_5000'] + 1
-                    info_data['count_plus'] = info_data['count_plus'] + 1
-                else:
-                    bot.answer_callback_query(
-                        callback_query_id=call.id, text=listNotEnough[langNumber1[0]])
-            save_data(user_data)
-        else:
-            bot.answer_callback_query(
-                callback_query_id=call.id, text=listNotEnough[langNumber1[0]])
     except Exception as ex:
         print(ex)
+
+    save_fo(data)
+    for i in data:
+        if(i['id'] == str(message.chat.id)):
+            count_plus = i['count_plus']
+            count_minus = i['count_minus']
+            price1 = 0
+            price2 = 0
+            if((type(int(count_plus)) == int) and (type(int(count_minus)) == int)):
+                if(i[i['lok']]['type_nominal'] == "10000"):
+                    price1 = int(count_plus) * 10000
+                    price2 = int(count_minus) * 10000
+                    i['balans'] = str(int(i['balans'])+price2)
+                elif(i[i['lok']]['type_nominal'] == "15000"):
+                    price1 = int(count_plus) * 15000
+                    price2 = int(count_minus) * 15000
+                    i['balans'] = str(int(i['balans'])+price2)
+                elif(i[i['lok']]['type_nominal'] == "25000"):
+                    price1 = int(count_plus) * 25000
+                    price2 = int(count_minus) * 25000
+                    i['balans'] = str(int(i['balans'])+price2)
+                elif(i[i['lok']]['type_nominal'] == "5000"):
+                    price1 = int(count_plus) * 5000
+                    price2 = int(count_minus) * 5000
+                    i['balans'] = str(int(i['balans'])+price2)
+
+                if(int(i['balans']) >= int(price1)):
+                    i['balans'] = str(int(i['balans'])-price1)
+                    # user_data['sportmaster_count'] = user_data['sportmaster_count'] + \
+                    #     int(count)
+                    i['count_plus'] = 0
+                    i['count_minus'] = 0
+                    # print(user_data)
+                else:
+                    print("Ошибка")
+    save_fo(data)
+    for i in data:
+        if(i['id']==str(call.message.chat.id)):
+            if(i[i['lok']]['type_nominal'] == "5000"):
+                price = str(i[i['lok']]
+                            ['count_5000'] * 5000) + 'тг'
+                shtuk = str(i[i['lok']]['count_5000'])
+            elif(i[i['lok']]['type_nominal'] == "10000"):
+                price = str(i[i['lok']]
+                            ['count_10000'] * 10000) + 'тг'
+                shtuk = str(i[i['lok']]['count_10000'])
+            elif(i[i['lok']]['type_nominal'] == "15000"):
+                price = str(i[i['lok']]
+                            ['count_15000'] * 15000) + 'тг'
+                shtuk = str(i[i['lok']]['count_15000'])
+            elif(i[i['lok']]['type_nominal'] == "25000"):
+                price = str(i[i['lok']]
+                            ['count_25000'] * 25000) + 'тг'
+                shtuk = str(i[i['lok']]['count_25000'])
+            elif(i[i['lok']] == i['dengi_count']):
+                if(i[i['lok']]['type_nominal'] == "5000"):
+                    price = str(
+                        i[i['lok']]['count_5000'] * 5000) + 'тг'
+                    shtuk = str(
+                        i[i['lok']]['count_5000'])
+            keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+            callback_button1 = telebot.types.InlineKeyboardButton(
+                text='➕', callback_data='plus',)
+            callback_button2 = telebot.types.InlineKeyboardButton(
+                text=shtuk + 'шт.- ' + price, callback_data='howmany')
+            callback_button3 = telebot.types.InlineKeyboardButton(
+                text='➖', callback_data='minus')
+            callback_button4 = telebot.types.InlineKeyboardButton(
+                text=listTagyKosu[langNumber1[0]], callback_data='enough')
+            callback_button5 = telebot.types.InlineKeyboardButton(
+                text='❌', callback_data='delete_full')
+            callback_button6 = telebot.types.InlineKeyboardButton(
+                text=listOstatok[langNumber1[0]] + i['balans'] + "тг", callback_data='balans')
+            callback_button7 = telebot.types.InlineKeyboardButton(
+                text=listAccept[langNumber1[0]], callback_data='soglasitsya')
+            callback_button8 = telebot.types.InlineKeyboardButton(
+                text=listVashaSumma[langNumber1[0]] + str(i['count_deti']*45000) + 'тг', callback_data='balans')
+            if(i['balans'] == str(i['count_deti']*45000)):
+                keyboard.add(callback_button8)
+                keyboard.add(callback_button2)
+                keyboard.row(callback_button1,
+                            callback_button3, callback_button5)
+                keyboard.add(callback_button7)
+                keyboard.add(callback_button4)
+            else:
+                keyboard.add(callback_button8)
+                keyboard.add(callback_button6)
+                keyboard.add(callback_button2)
+                keyboard.row(callback_button1,
+                            callback_button3, callback_button5)
+                keyboard.add(callback_button7)
+                keyboard.add(callback_button4)
+            bot.edit_message_reply_markup(
+                call.from_user.id, call.message.message_id, reply_markup=keyboard)
+
 
 
 def delete_minus(message, call):
+    with open('result.json', encoding='utf-8') as file:
+        data = json.load(file)
     try:
-        if(user_data[user_data['lok']]['type_nominal'] == "10000"):
-            if(user_data[user_data['lok']]['count_10000'] > 0):
-                info_data['count_minus'] = info_data['count_minus']+1
-                user_data[user_data['lok']
-                          ]['count_10000'] = user_data[user_data['lok']]['count_10000'] - 1
-            elif(user_data[user_data['lok']]['count_10000'] == 0):
-                bot.answer_callback_query(
-                    callback_query_id=call.id, text='Невозможно меньше нуля')
-        elif(user_data[user_data['lok']]['type_nominal'] == "15000"):
-            if(user_data[user_data['lok']]['count_15000'] > 0):
-                info_data['count_minus'] = info_data['count_minus']+1
-                user_data[user_data['lok']
-                          ]['count_15000'] = user_data[user_data['lok']]['count_15000'] - 1
-            elif(user_data[user_data['lok']]['count_15000'] == 0):
-                bot.answer_callback_query(
-                    callback_query_id=call.id, text='Невозможно меньше нуля')
-        elif(user_data[user_data['lok']]['type_nominal'] == "25000"):
-            if(user_data[user_data['lok']]['count_25000'] > 0):
-                info_data['count_minus'] = info_data['count_minus']+1
-                user_data[user_data['lok']
-                          ]['count_25000'] = user_data[user_data['lok']]['count_25000'] - 1
-            elif(user_data[user_data['lok']]['count_25000'] == 0):
-                bot.answer_callback_query(
-                    callback_query_id=call.id, text='Невозможно меньше нуля')
-        elif(user_data[user_data['lok']]['type_nominal'] == "5000"):
-            if(user_data[user_data['lok']]['count_5000'] > 0):
-                info_data['count_minus'] = info_data['count_minus']+1
-                user_data[user_data['lok']
-                          ]['count_5000'] = user_data[user_data['lok']]['count_5000'] - 1
-            elif(user_data[user_data['lok']]['count_5000'] == 0):
-                bot.answer_callback_query(
-                    callback_query_id=call.id, text='Невозможно меньше нуля')
+        for i in data:
+            if(i[i['lok']]['type_nominal'] == "10000"):
+                if(i[i['lok']]['count_10000'] > 0):
+                    i['count_minus'] = i['count_minus']+1
+                    i[i['lok']
+                            ]['count_10000'] = i[i['lok']]['count_10000'] - 1
+                elif(i[i['lok']]['count_10000'] == 0):
+                    bot.answer_callback_query(
+                        callback_query_id=call.id, text='Невозможно меньше нуля')
+            elif(i[i['lok']]['type_nominal'] == "15000"):
+                if(i[i['lok']]['count_15000'] > 0):
+                    i['count_minus'] = i['count_minus']+1
+                    i[i['lok']
+                            ]['count_15000'] = i[i['lok']]['count_15000'] - 1
+                elif(i[i['lok']]['count_15000'] == 0):
+                    bot.answer_callback_query(
+                        callback_query_id=call.id, text='Невозможно меньше нуля')
+            elif(i[i['lok']]['type_nominal'] == "25000"):
+                if(i[i['lok']]['count_25000'] > 0):
+                    i['count_minus'] = i['count_minus']+1
+                    i[i['lok']
+                            ]['count_25000'] = i[i['lok']]['count_25000'] - 1
+                elif(i[i['lok']]['count_25000'] == 0):
+                    bot.answer_callback_query(
+                        callback_query_id=call.id, text='Невозможно меньше нуля')
+            elif(i[i['lok']]['type_nominal'] == "5000"):
+                if(i[i['lok']]['count_5000'] > 0):
+                    i['count_minus'] = i['count_minus']+1
+                    i[i['lok']
+                            ]['count_5000'] = i[i['lok']]['count_5000'] - 1
+                elif(i[i['lok']]['count_5000'] == 0):
+                    bot.answer_callback_query(
+                        callback_query_id=call.id, text='Невозможно меньше нуля')
     except Exception as ex:
         print(ex)
+    save_fo(data)
+    for i in data:
+        if(i['id'] == str(message.chat.id)):
+            count_plus = i['count_plus']
+            count_minus = i['count_minus']
+            price1 = 0
+            price2 = 0
+            if((type(int(count_plus)) == int) and (type(int(count_minus)) == int)):
+                if(i[i['lok']]['type_nominal'] == "10000"):
+                    price1 = int(count_plus) * 10000
+                    price2 = int(count_minus) * 10000
+                    i['balans'] = str(int(i['balans'])+price2)
+                elif(i[i['lok']]['type_nominal'] == "15000"):
+                    price1 = int(count_plus) * 15000
+                    price2 = int(count_minus) * 15000
+                    i['balans'] = str(int(i['balans'])+price2)
+                elif(i[i['lok']]['type_nominal'] == "25000"):
+                    price1 = int(count_plus) * 25000
+                    price2 = int(count_minus) * 25000
+                    i['balans'] = str(int(i['balans'])+price2)
+                elif(i[i['lok']]['type_nominal'] == "5000"):
+                    price1 = int(count_plus) * 5000
+                    price2 = int(count_minus) * 5000
+                    i['balans'] = str(int(i['balans'])+price2)
+
+                if(int(i['balans']) >= int(price1)):
+                    i['balans'] = str(int(i['balans'])-price1)
+                    # user_data['sportmaster_count'] = user_data['sportmaster_count'] + \
+                    #     int(count)
+                    i['count_plus'] = 0
+                    i['count_minus'] = 0
+                    # print(user_data)
+                else:
+                    print("Ошибка")
+    save_fo(data)
+    for i in data:
+        if(i['id']==str(call.message.chat.id)):
+            if(i[i['lok']]['type_nominal'] == "5000"):
+                price = str(i[i['lok']]
+                            ['count_5000'] * 5000) + 'тг'
+                shtuk = str(i[i['lok']]['count_5000'])
+            elif(i[i['lok']]['type_nominal'] == "10000"):
+                price = str(i[i['lok']]
+                            ['count_10000'] * 10000) + 'тг'
+                shtuk = str(i[i['lok']]['count_10000'])
+            elif(i[i['lok']]['type_nominal'] == "15000"):
+                price = str(i[i['lok']]
+                            ['count_15000'] * 15000) + 'тг'
+                shtuk = str(i[i['lok']]['count_15000'])
+            elif(i[i['lok']]['type_nominal'] == "25000"):
+                price = str(i[i['lok']]
+                            ['count_25000'] * 25000) + 'тг'
+                shtuk = str(i[i['lok']]['count_25000'])
+            elif(i[i['lok']] == i['dengi_count']):
+                if(i[i['lok']]['type_nominal'] == "5000"):
+                    price = str(
+                        i[i['lok']]['count_5000'] * 5000) + 'тг'
+                    shtuk = str(
+                        i[i['lok']]['count_5000'])
+            keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+            callback_button1 = telebot.types.InlineKeyboardButton(
+                text='➕', callback_data='plus',)
+            callback_button2 = telebot.types.InlineKeyboardButton(
+                text=shtuk + 'шт.- ' + price, callback_data='howmany')
+            callback_button3 = telebot.types.InlineKeyboardButton(
+                text='➖', callback_data='minus')
+            callback_button4 = telebot.types.InlineKeyboardButton(
+                text=listTagyKosu[langNumber1[0]], callback_data='enough')
+            callback_button5 = telebot.types.InlineKeyboardButton(
+                text='❌', callback_data='delete_full')
+            callback_button6 = telebot.types.InlineKeyboardButton(
+                text=listOstatok[langNumber1[0]] + i['balans'] + "тг", callback_data='balans')
+            callback_button7 = telebot.types.InlineKeyboardButton(
+                text=listAccept[langNumber1[0]], callback_data='soglasitsya')
+            callback_button8 = telebot.types.InlineKeyboardButton(
+                text=listVashaSumma[langNumber1[0]] + str(i['count_deti']*45000) + 'тг', callback_data='balans')
+            if(i['balans'] == str(i['count_deti']*45000)):
+                keyboard.add(callback_button8)
+                keyboard.add(callback_button2)
+                keyboard.row(callback_button1,
+                            callback_button3, callback_button5)
+                keyboard.add(callback_button7)
+                keyboard.add(callback_button4)
+            else:
+                keyboard.add(callback_button8)
+                keyboard.add(callback_button6)
+                keyboard.add(callback_button2)
+                keyboard.row(callback_button1,
+                            callback_button3, callback_button5)
+                keyboard.add(callback_button7)
+                keyboard.add(callback_button4)
+            bot.edit_message_reply_markup(
+                call.from_user.id, call.message.message_id, reply_markup=keyboard)
+
 
 
 def get_dengi(message):
@@ -1230,52 +1327,6 @@ def get_dengi(message):
         get_cart(message)
 
 
-def add_mel(message):
-    count = message.text
-    if(int(user_data['sportmaster_count']) >= int(count)):
-        price = int(count)*5000
-        user_data['balans'] = str(int(user_data['balans']) + price)
-        user_data['sportmaster_count'] = user_data['sportmaster_count'] - \
-            int(count)
-        bot.send_message(
-            message.chat.id, listSuccess[langNumber1[0]]+'\U0001F44D')
-        get_korzina(message)
-    else:
-        bot.send_message(message.chat.id,
-                         listUnSuccess[langNumber1[0]]+'\U0001F614')
-        get_korzina(message)
-
-
-def add_mar(message):
-    count = message.text
-    if(int(user_data['mechta_count']) >= int(count)):
-        price = int(count)*5000
-        user_data['balans'] = str(int(user_data['balans']) + price)
-        user_data['mechta_count'] = user_data['mechta_count'] - int(count)
-        bot.send_message(
-            message.chat.id, listSuccess[langNumber1[0]]+'\U0001F44D')
-        get_korzina(message)
-    else:
-        bot.send_message(
-            message.chat.id, listUnSuccess[langNumber1[0]]+'\U0001F614')
-        get_korzina(message)
-
-
-def add_lcwai(message):
-    count = message.text
-    if(int(user_data['lcwaikiki_count']) >= int(count)):
-        price = int(count)*5000
-        user_data['balans'] = str(int(user_data['balans']) + price)
-        user_data['lcwaikiki_count'] = user_data['lcwaikiki_count'] - \
-            int(count)
-        bot.send_message(
-            message.chat.id, listSuccess[langNumber1[0]]+'\U0001F44D')
-        get_korzina(message)
-    else:
-        bot.send_message(message.chat.id,
-                         listUnSuccess[langNumber1[0]]+'\U0001F614')
-        get_korzina(message)
-
 
 def add_balans(message):
     global dengi
@@ -1293,14 +1344,13 @@ def add_balans(message):
 
 
 def get_sogl(message):
-    bot.delete_message(message.chat.id, message.message_id-1)
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
     callback_button1 = telebot.types.InlineKeyboardButton(
         text=listYes[langNumber1[0]], callback_data='yes')
     callback_button2 = telebot.types.InlineKeyboardButton(
         text=listNo[langNumber1[0]], callback_data='no')
     keyboard.add(callback_button1, callback_button2)
-    bot.send_message(message.chat.id, get_info_only_exists() +
+    bot.send_message(message.chat.id, get_info_only_exists(message) +
                      '\n\n', parse_mode="HTML")
     bot.send_message(
         message.chat.id, listEndAccept[langNumber1[0]], reply_markup=keyboard, parse_mode="HTML")
@@ -1309,42 +1359,45 @@ def get_sogl(message):
 def get_meloman_sert(message):
     global count_plus
     global count_minus
-    count_plus = info_data['count_plus']
-    count_minus = info_data['count_minus']
-    price1 = 0
-    price2 = 0
-    try:
-        if((type(int(count_plus)) == int) and (type(int(count_minus)) == int)):
-            if(user_data[user_data['lok']]['type_nominal'] == "10000"):
-                price1 = int(count_plus) * 10000
-                price2 = int(count_minus) * 10000
-                user_data['balans'] = str(int(user_data['balans'])+price2)
-            elif(user_data[user_data['lok']]['type_nominal'] == "15000"):
-                price1 = int(count_plus) * 15000
-                price2 = int(count_minus) * 15000
-                user_data['balans'] = str(int(user_data['balans'])+price2)
-            elif(user_data[user_data['lok']]['type_nominal'] == "25000"):
-                price1 = int(count_plus) * 25000
-                price2 = int(count_minus) * 25000
-                user_data['balans'] = str(int(user_data['balans'])+price2)
-            elif(user_data[user_data['lok']]['type_nominal'] == "5000"):
-                price1 = int(count_plus) * 5000
-                price2 = int(count_minus) * 5000
-                user_data['balans'] = str(int(user_data['balans'])+price2)
+    with open('result.json', encoding='utf-8') as file:
+        data = json.load(file)
+    for i in data:
+        if(i['id']==str(message.chat.id)):
+            count_plus = i['count_plus']
+            count_minus = i['count_minus']
+            price1 = 0
+            price2 = 0
+            if((type(int(count_plus)) == int) and (type(int(count_minus)) == int)):
+                if(i[i['lok']]['type_nominal'] == "10000"):
+                    price1 = int(count_plus) * 10000
+                    price2 = int(count_minus) * 10000
+                    i['balans'] = str(int(i['balans'])+price2)
+                elif(i[i['lok']]['type_nominal'] == "15000"):
+                    price1 = int(count_plus) * 15000
+                    price2 = int(count_minus) * 15000
+                    i['balans'] = str(int(i['balans'])+price2)
+                elif(i[i['lok']]['type_nominal'] == "25000"):
+                    price1 = int(count_plus) * 25000
+                    price2 = int(count_minus) * 25000
+                    i['balans'] = str(int(i['balans'])+price2)
+                elif(i[i['lok']]['type_nominal'] == "5000"):
+                    price1 = int(count_plus) * 5000
+                    price2 = int(count_minus) * 5000
+                    i['balans'] = str(int(i['balans'])+price2)
 
-            if(int(user_data['balans']) >= int(price1)):
-                user_data['balans'] = str(int(user_data['balans'])-price1)
-                # user_data['sportmaster_count'] = user_data['sportmaster_count'] + \
-                #     int(count)
-                info_data['count_plus'] = 0
-                info_data['count_minus'] = 0
-                save_data(user_data)
-                # print(user_data)
-            else:
-                print("Ошибка")
-    except Exception as ex:
-        print(ex)
-        get_sertificat(message)
+                if(int(i['balans']) >= int(price1)):
+                    i['balans'] = str(int(i['balans'])-price1)
+                    # user_data['sportmaster_count'] = user_data['sportmaster_count'] + \
+                    #     int(count)
+                    info_data['count_plus'] = 0
+                    info_data['count_minus'] = 0
+                    save_data(user_data)
+                    # print(user_data)
+                else:
+                    print("Ошибка")
+    save_fo(data)
+    print(data)
+
 
 
 def get_abdi_sert(message):
@@ -1501,23 +1554,29 @@ def between_date_day(from_date, to_date):
     return result_date.days
 
 
-def get_count():
+def get_count(message):
+    try:
+        a = 0
+        with open('u.json', encoding='utf-8') as file:
+            stock = json.load(file)
+        with open('result.json', encoding='utf-8') as file:
+            data = json.load(file)
+        for smth in stock:
+            for i in range(len(data)):
+                if data[i][id] == str(message.from_user.id):
+                    a = a + 1
+        price = a * 45000
+        return str(int(price))
+    except Exception as ex:
+        print(ex)
+
+
+def get_count_deti(message):
     a = 0
     with open('u.json', encoding='utf-8') as file:
         stock = json.load(file)
     for smth in stock:
-        if (smth['Телефон'].replace("+", "") == user_data['phone_number'].replace("+", "")):
-            a = a + 1
-    price = a * 45000
-    return str(int(price))
-
-
-def get_count_deti():
-    a = 0
-    with open('u.json', encoding='utf-8') as file:
-        stock = json.load(file)
-    for smth in stock:
-        if (smth['Телефон'].replace("+", "") == user_data['phone_number'].replace("+", "")):
+        if (smth['Телефон'].replace("+", "") == str(message.contact.phone_number).replace("+","")):
             birthday = int(between_date_day(
                 smth['Дата рождения Ребенка'], '01.01.2022') / 365)
             a = a + 1
@@ -1595,7 +1654,7 @@ def clear_cart(message):
     keyboard.add(callback_button1, callback_button2,
                  callback_button3, callback_button4)
     bot.edit_message_text(
-        chat_id=message.chat.id, message_id=message.message_id, text=get_info_only_exists(), reply_markup=keyboard, parse_mode="HTML")
+        chat_id=message.chat.id, message_id=message.message_id, text=get_info_only_exists(message), reply_markup=keyboard, parse_mode="HTML")
     save_data(user_data)
 
 
@@ -1614,6 +1673,48 @@ def save_data(user_data):
     with open('result.json', "w", encoding='utf8') as file:
         file.write(json.dumps(data, ensure_ascii=False))
 
+def save_data_json(message):
+    luk = {
+            'id': str(message.from_user.id),
+            'iin': find_iin(message),
+            'fio': find_fio(message),
+            'phone_number': str(message.contact.phone_number).replace("+",""),
+            'balans': str(get_count_deti(message) * 45000),
+            'count_deti': get_count_deti(message),
+            'dengi': 0,
+            'sportmaster_count': {"type_nominal": "", "count_5000": 0,"count_10000": 0, "count_15000": 0, "count_25000": 0},
+            'mechta_count': {"type_nominal": "","count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
+            'lcwaikiki_count': {"type_nominal": "","count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
+            'abdi_count': {"type_nominal": "","count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
+            'dengi_count': {"type_nominal": "", "count_5000": 0, "count_10000": 0, "count_15000": 0, "count_25000": 0},
+            'lok': '',
+            'accept': False,
+            'save': False,
+            'lang': '',
+            'sended': False,
+            'comment': [],
+            'filial': '',
+            'count_plus': 0,
+            'count_minus': 0
+        }
+    append_deti(luk['comment'],message)
+    luk['filial'] = 'Атырау'
+    try:
+        with open('result.json', encoding='utf-8') as file:
+            data = json.load(file)
+        minimal = 0
+        for txt in data:
+            if txt['phone_number'] == luk['phone_number']:
+                data.pop(minimal)
+            else:
+                None
+            minimal = minimal + 1
+        data.append(luk)
+        with open('result.json', "w", encoding='utf8') as file:
+            file.write(json.dumps(data, ensure_ascii=False))
+    except Exception as ex:
+        print(ex)
+
 
 def get_phone_number(message):
 
@@ -1627,111 +1728,112 @@ def get_phone_number(message):
     bot.register_next_step_handler(message, get_all_data)
 
 
-def get_info_only_exists():
+def get_info_only_exists(message):
     string = listVybrali[langNumber1[0]]
     dengi = ''
     sport = ''
     mechta = ''
     lcwaikiki = ''
     abdi = ''
-    if(user_data['dengi'] > 0):
-        dengi = "\n" + listDengiRazmer[langNumber1[0]] + \
-            str(user_data['dengi']) + 'тг'+'\U0001F4B0'
-    if(user_data['sportmaster_count']['count_5000'] or user_data['sportmaster_count']['count_10000'] > 0 or user_data['sportmaster_count']['count_15000'] > 0 or user_data['sportmaster_count']['count_25000'] > 0):
-        if(user_data['sportmaster_count']['count_5000'] > 0):
-            sport = sport + " сертификат номиналом 5000тг " + "- " + \
-                str(user_data['sportmaster_count']['count_5000']
-                    ) + ' ' + listCount[langNumber1[0]] + ", "
-        if(user_data['sportmaster_count']['count_10000'] > 0):
-            sport = sport + " сертификат номиналом 10000тг " + "- " + \
-                str(user_data['sportmaster_count']['count_10000']
-                    ) + ' ' + listCount[langNumber1[0]] + ", "
-        if(user_data['sportmaster_count']['count_15000'] > 0):
-            sport = sport + " сертификат номиналом 15000тг " + "- " + \
-                str(user_data['sportmaster_count']['count_15000']
-                    ) + ' ' + listCount[langNumber1[0]] + ", "
-        if(user_data['sportmaster_count']['count_25000'] > 0):
-            sport = sport + " сертификат номиналом 25000тг " + "- " + \
-                str(user_data['sportmaster_count']['count_25000']
-                    ) + ' ' + listCount[langNumber1[0]]
-    if(user_data['mechta_count']['count_5000'] or user_data['mechta_count']['count_10000'] > 0 or user_data['mechta_count']['count_15000'] > 0 or user_data['mechta_count']['count_25000'] > 0):
-        if(user_data['mechta_count']['count_5000'] > 0):
-            mechta = mechta + " сертификат номиналом 5000тг " + "- " + \
-                str(user_data['mechta_count']['count_5000']
-                    ) + ' ' + listCount[langNumber1[0]] + ", "
-        if(user_data['mechta_count']['count_10000'] > 0):
-            mechta = mechta + " сертификат номиналом 10000тг " + "- " + \
-                str(user_data['mechta_count']['count_10000']) + \
-                ' ' + listCount[langNumber1[0]] + ", "
-        if(user_data['mechta_count']['count_15000'] > 0):
-            mechta = mechta + " сертификат номиналом 15000тг " + "- " + \
-                str(user_data['mechta_count']['count_15000']) + \
-                ' ' + listCount[langNumber1[0]] + ", "
-        if(user_data['mechta_count']['count_25000'] > 0):
-            mechta = mechta + " сертификат номиналом 25000тг " + "- " + \
-                str(user_data['mechta_count']['count_25000']) + \
-                ' ' + listCount[langNumber1[0]]
-    if(user_data['lcwaikiki_count']['count_5000'] or user_data['lcwaikiki_count']['count_10000'] > 0 or user_data['lcwaikiki_count']['count_15000'] > 0 or user_data['lcwaikiki_count']['count_25000'] > 0):
-        if(user_data['lcwaikiki_count']['count_5000'] > 0):
-            lcwaikiki = lcwaikiki + " сертификат номиналом 5000тг " + "- " + \
-                str(user_data['lcwaikiki_count']['count_5000']
-                    ) + ' ' + listCount[langNumber1[0]] + ", "
-        if(user_data['lcwaikiki_count']['count_10000'] > 0):
-            lcwaikiki = lcwaikiki + " сертификат номиналом 10000тг " + "- " + \
-                str(user_data['lcwaikiki_count']['count_10000']
-                    ) + ' ' + listCount[langNumber1[0]] + ", "
-        if(user_data['lcwaikiki_count']['count_15000'] > 0):
-            lcwaikiki = lcwaikiki + " сертификат номиналом 15000тг " + "- " + \
-                str(user_data['lcwaikiki_count']['count_15000']
-                    ) + ' ' + listCount[langNumber1[0]] + ", "
-        if(user_data['lcwaikiki_count']['count_25000'] > 0):
-            lcwaikiki = lcwaikiki + " сертификат номиналом 25000тг " + "- " + \
-                str(user_data['lcwaikiki_count']['count_25000']
-                    ) + ' ' + listCount[langNumber1[0]]
-    if(user_data['abdi_count']['count_5000'] or user_data['abdi_count']['count_10000'] > 0 or user_data['abdi_count']['count_15000'] > 0 or user_data['abdi_count']['count_25000'] > 0):
-        if(user_data['abdi_count']['count_5000'] > 0):
-            abdi = abdi + " сертификат номиналом 5000тг " + "- " + \
-                str(user_data['abdi_count']['count_5000']
-                    ) + ' ' + listCount[langNumber1[0]] + ", "
-        if(user_data['abdi_count']['count_10000'] > 0):
-            abdi = abdi + " сертификат номиналом 10000тг " + "- " + \
-                str(user_data['abdi_count']['count_10000']
-                    ) + ' ' + listCount[langNumber1[0]] + ", "
-        if(user_data['abdi_count']['count_15000'] > 0):
-            abdi = abdi + " сертификат номиналом 15000тг " + "- " + \
-                str(user_data['abdi_count']['count_15000']
-                    ) + ' ' + listCount[langNumber1[0]] + ", "
-        if(user_data['abdi_count']['count_25000'] > 0):
-            abdi = abdi + " сертификат номиналом 25000тг " + "- " + \
-                str(user_data['abdi_count']['count_25000']
-                    ) + ' ' + listCount[langNumber1[0]]
-    if(user_data['sportmaster_count']['count_5000'] > 0 or user_data['sportmaster_count']['count_10000'] > 0 or user_data['sportmaster_count']['count_15000'] > 0 or user_data['sportmaster_count']['count_25000'] > 0):
-        sport = "\nСпортмастер:" + sport
-    if(user_data['mechta_count']['count_5000'] > 0 or user_data['mechta_count']['count_10000'] > 0 or user_data['mechta_count']['count_15000'] > 0 or user_data['mechta_count']['count_25000'] > 0):
-        mechta = "\nMechta:" + mechta
-    if(user_data['lcwaikiki_count']['count_5000'] > 0 or user_data['lcwaikiki_count']['count_10000'] > 0 or user_data['lcwaikiki_count']['count_15000'] > 0 or user_data['lcwaikiki_count']['count_25000'] > 0):
-        lcwaikiki = "\nLC Waikiki:" + lcwaikiki
-    if(user_data['abdi_count']['count_5000'] > 0 or user_data['abdi_count']['count_10000'] > 0 or user_data['abdi_count']['count_15000'] > 0 or user_data['abdi_count']['count_25000'] > 0):
-        abdi = "\nABDI:" + abdi
-    string =  string + sport + mechta + lcwaikiki + abdi + dengi +"\n\nИтого: " + get_count() + "тг"
-    return string
-
-
-def get_saved_person_for_excel():
+    all = ''
     with open('result.json', encoding='utf-8') as file:
         data = json.load(file)
-    counts = {
-        'sportmaster_count': {"Номанал 5000": user_data['sportmaster_count']['count_5000'],"Номанал 10000": user_data['sportmaster_count']['count_10000'], "Номанал 15000": user_data['sportmaster_count']['count_15000'], "Номанал 25000": user_data['sportmaster_count']['count_25000']},
-        'mechta_count': {"Номанал 5000": user_data['mechta_count']['count_5000'],"Номанал 10000": user_data['mechta_count']['count_10000'], "Номанал 15000": user_data['mechta_count']['count_15000'], "Номанал 25000": user_data['mechta_count']['count_25000']},
-        'lcwaikiki_count': {"Номанал 5000": user_data['lcwaikiki_count']['count_5000'],"Номанал 10000": user_data['lcwaikiki_count']['count_10000'], "Номанал 15000": user_data['lcwaikiki_count']['count_15000'], "Номанал 25000": user_data['lcwaikiki_count']['count_25000']},
-        'abdi_count': {"Номанал 5000": user_data['abdi_count']['count_5000'],"Номанал 10000": user_data['abdi_count']['count_10000'], "Номанал 15000": user_data['abdi_count']['count_15000'], "Номанал 25000": user_data['abdi_count']['count_25000']},
-    }
     for i in data:
-        if i['save'] == True and i['sended'] == False:
+        if i['id']==str(message.chat.id):
+            all  = str(i['count_deti']* 45000)
+            if(i['dengi'] > 0):
+                dengi = "\n" + listDengiRazmer[langNumber1[0]] + \
+                    str(i['dengi']) + 'тг'+'\U0001F4B0'
+            if(i['sportmaster_count']['count_5000'] or i['sportmaster_count']['count_10000'] > 0 or i['sportmaster_count']['count_15000'] > 0 or i['sportmaster_count']['count_25000'] > 0):
+                if(i['sportmaster_count']['count_5000'] > 0):
+                    sport = sport + " сертификат номиналом 5000тг " + "- " + \
+                        str(i['sportmaster_count']['count_5000']
+                            ) + ' ' + listCount[langNumber1[0]] + ", "
+                if(i['sportmaster_count']['count_10000'] > 0):
+                    sport = sport + " сертификат номиналом 10000тг " + "- " + \
+                        str(i['sportmaster_count']['count_10000']
+                            ) + ' ' + listCount[langNumber1[0]] + ", "
+                if(i['sportmaster_count']['count_15000'] > 0):
+                    sport = sport + " сертификат номиналом 15000тг " + "- " + \
+                        str(i['sportmaster_count']['count_15000']
+                            ) + ' ' + listCount[langNumber1[0]] + ", "
+                if(i['sportmaster_count']['count_25000'] > 0):
+                    sport = sport + " сертификат номиналом 25000тг " + "- " + \
+                        str(i['sportmaster_count']['count_25000']
+                            ) + ' ' + listCount[langNumber1[0]]
+            if(i['mechta_count']['count_5000'] or i['mechta_count']['count_10000'] > 0 or i['mechta_count']['count_15000'] > 0 or i['mechta_count']['count_25000'] > 0):
+                if(i['mechta_count']['count_5000'] > 0):
+                    mechta = mechta + " сертификат номиналом 5000тг " + "- " + \
+                        str(i['mechta_count']['count_5000']
+                            ) + ' ' + listCount[langNumber1[0]] + ", "
+                if(i['mechta_count']['count_10000'] > 0):
+                    mechta = mechta + " сертификат номиналом 10000тг " + "- " + \
+                        str(i['mechta_count']['count_10000']) + \
+                        ' ' + listCount[langNumber1[0]] + ", "
+                if(i['mechta_count']['count_15000'] > 0):
+                    mechta = mechta + " сертификат номиналом 15000тг " + "- " + \
+                        str(i['mechta_count']['count_15000']) + \
+                        ' ' + listCount[langNumber1[0]] + ", "
+                if(i['mechta_count']['count_25000'] > 0):
+                    mechta = mechta + " сертификат номиналом 25000тг " + "- " + \
+                        str(i['mechta_count']['count_25000']) + \
+                        ' ' + listCount[langNumber1[0]]
+            if(i['lcwaikiki_count']['count_5000'] or i['lcwaikiki_count']['count_10000'] > 0 or i['lcwaikiki_count']['count_15000'] > 0 or i['lcwaikiki_count']['count_25000'] > 0):
+                if(i['lcwaikiki_count']['count_5000'] > 0):
+                    lcwaikiki = lcwaikiki + " сертификат номиналом 5000тг " + "- " + \
+                        str(i['lcwaikiki_count']['count_5000']
+                            ) + ' ' + listCount[langNumber1[0]] + ", "
+                if(i['lcwaikiki_count']['count_10000'] > 0):
+                    lcwaikiki = lcwaikiki + " сертификат номиналом 10000тг " + "- " + \
+                        str(i['lcwaikiki_count']['count_10000']
+                            ) + ' ' + listCount[langNumber1[0]] + ", "
+                if(i['lcwaikiki_count']['count_15000'] > 0):
+                    lcwaikiki = lcwaikiki + " сертификат номиналом 15000тг " + "- " + \
+                        str(i['lcwaikiki_count']['count_15000']
+                            ) + ' ' + listCount[langNumber1[0]] + ", "
+                if(i['lcwaikiki_count']['count_25000'] > 0):
+                    lcwaikiki = lcwaikiki + " сертификат номиналом 25000тг " + "- " + \
+                        str(i['lcwaikiki_count']['count_25000']
+                            ) + ' ' + listCount[langNumber1[0]]
+            if(i['abdi_count']['count_5000'] or i['abdi_count']['count_10000'] > 0 or i['abdi_count']['count_15000'] > 0 or i['abdi_count']['count_25000'] > 0):
+                if(i['abdi_count']['count_5000'] > 0):
+                    abdi = abdi + " сертификат номиналом 5000тг " + "- " + \
+                        str(i['abdi_count']['count_5000']
+                            ) + ' ' + listCount[langNumber1[0]] + ", "
+                if(i['abdi_count']['count_10000'] > 0):
+                    abdi = abdi + " сертификат номиналом 10000тг " + "- " + \
+                        str(i['abdi_count']['count_10000']
+                            ) + ' ' + listCount[langNumber1[0]] + ", "
+                if(i['abdi_count']['count_15000'] > 0):
+                    abdi = abdi + " сертификат номиналом 15000тг " + "- " + \
+                        str(i['abdi_count']['count_15000']
+                            ) + ' ' + listCount[langNumber1[0]] + ", "
+                if(i['abdi_count']['count_25000'] > 0):
+                    abdi = abdi + " сертификат номиналом 25000тг " + "- " + \
+                        str(i['abdi_count']['count_25000']
+                            ) + ' ' + listCount[langNumber1[0]]
+            if(i['sportmaster_count']['count_5000'] > 0 or i['sportmaster_count']['count_10000'] > 0 or i['sportmaster_count']['count_15000'] > 0 or i['sportmaster_count']['count_25000'] > 0):
+                sport = "\nСпортмастер:" + sport
+            if(i['mechta_count']['count_5000'] > 0 or i['mechta_count']['count_10000'] > 0 or i['mechta_count']['count_15000'] > 0 or i['mechta_count']['count_25000'] > 0):
+                mechta = "\nMechta:" + mechta
+            if(i['lcwaikiki_count']['count_5000'] > 0 or i['lcwaikiki_count']['count_10000'] > 0 or i['lcwaikiki_count']['count_15000'] > 0 or i['lcwaikiki_count']['count_25000'] > 0):
+                lcwaikiki = "\nLC Waikiki:" + lcwaikiki
+            if(i['abdi_count']['count_5000'] > 0 or i['abdi_count']['count_10000'] > 0 or i['abdi_count']['count_15000'] > 0 or i['abdi_count']['count_25000'] > 0):
+                abdi = "\nABDI:" + abdi
+            string =  string + sport + mechta + lcwaikiki + abdi + dengi +"\n\nИтого: " + all + "тг"
+            return string
+
+
+def get_saved_person_for_excel(message,counts):
+    with open('result.json', encoding='utf-8') as file:
+        result_json = json.load(file)
+    for i in result_json:
+        if i['save'] == True and i['id'] == str(message.chat.id):
             result = {
-                'Филиал': find_city(),
+                'Филиал': i['filial'],
                 'ФИО Сотрудника': i['fio'],
                 'ИИН Сотрудника': i['iin'],
+                'Банк': i['cart_type'],
                 'Число детей': i['count_deti'],
                 'Информация о Ребенке': i['comment'],
                 'Денежная компенсация': i['dengi'],
@@ -1739,7 +1841,7 @@ def get_saved_person_for_excel():
                 'Mechta сертификаты': counts['mechta_count'],
                 'LC Waikiki сертификаты': counts['lcwaikiki_count'],
                 'ABDI сертификаты': counts['abdi_count'],
-                'Итого': get_count()
+                'Итого': i['itogo']
             }
     counts.clear()
     with open('all.json', encoding='utf-8') as files:
@@ -1764,10 +1866,18 @@ def find_iin(message):
         data = json.load(files)
     iin = ''
     for i in data:
-        if(i['Телефон'] == user_data['phone_number']):
+        if(i['Телефон'] == str(message.contact.phone_number).replace("+","")):
             iin = i['ИИН']
     return iin
 
+def find_fio(message):
+    with open('u.json', encoding='utf-8') as files:
+        data = json.load(files)
+    fio = ''
+    for i in data:
+        if(i['Телефон'] == str(message.contact.phone_number).replace("+","")):
+            fio = i['ФИО']
+    return fio
 
 def find_city():
     with open('u.json', encoding='utf-8') as files:
@@ -1789,7 +1899,7 @@ listIIN = ['В базе данных не нашли ваш номер\nНапи
 listBalans = ['Ваша сумма', 'Сiздiн балансыныз', ]
 listuVas = [' у вас ', ' сізде ']
 listRebenok = [' ребенок/детей школьного возраста\n\nНа 1 ребенок-школьника в возрасте от 6 до 17 лет включительно полагается 45000тг',
-               ' мектеп жаcтағы балаңыз бар\n\n 1 балаға-оқушыға 45 000 теңгеден берiледi (ағымдағы жылдың 1 қыркүйегіндегі жағдай бойынша 6-дан 17 жасқа дейін)  !!!', ' ребенок/детей школьного возраста\n\nНа 1 школьника в возрасте от 6 до 17 лет включительно полагается 45000тг']
+               ' мектеп жаcтағы балаңыз бар\n\n1 балаға-оқушыға 45 000 теңгеден берiледi (ағымдағы жылдың 1 қыркүйегіндегі жағдай бойынша 6-дан 17 жасқа дейін)  !!!', ' ребенок/детей школьного возраста\n\nНа 1 школьника в возрасте от 6 до 17 лет включительно полагается 45000тг']
 list3Bank = ['Согласны ли вы с указаными данными? ',
              'Көрсетiлген ақпаратпен келiсеciз бе?']
 
@@ -1846,8 +1956,8 @@ listCheckPhone = ['Проверка номера\nНажмите на кнопк
                   'Нөмірді тексеру\n"Телефон нөмірін жіберу" батырмасын басыңыз']
 listLangChange = ['Язык изменен ', 'Тіл өзгерді']
 ChecklastMess = ['Проверить Корзину', 'Себетті Тексеру']
-listInstruck = ['Уважаемые коллеги!!\n\nВ рамках Коллективного договора на подготовку детей к школе просим пройти опрос.\nСрок  прохождения опроса до <b>19</b> июля 2022 года.',
-                'Құрметті әріптестер!!\nБалаларды мектепке дайындауға арналған Ұжымдық шарт аясында сауалнамадан өтуді сұраймыз.\nСауалнамадан өту мерзімі 2022 жылғы <b>19</b> шілдеге дейін.']
+listInstruck = ['Уважаемые коллеги!!\n\nДля получения компенсации или сертификатов на подготовку детей к школе просим пройти опрос.\nСрок  прохождения опроса до <b>20</b> июля 2022 года.',
+                'Құрметті әріптестер!!\nӨтемақы немесе балаларды мектепке дайындауға сертификат алу үшін сауалнамадан өтуіңізді сұраймыз.\nСауалнамадан өту мерзімі 2022 жылғы <b>20</b> шілдеге дейін.']
 listPart = ['Частично деньги или сертификаты',
             'Ішінара ақша немесе сертификаттар']
 listNotinBD = ['<b>Вас нету базе данных</b>\nНапишите свой ИИН',
@@ -1859,8 +1969,8 @@ listAddMore = ['🔙 Добавить еще', '🔙Тағы қосу']
 listVashaSumma = ['Ваша сумма: ', 'Сіздің сомаңыз: ']
 listPodtverdit = ['Подтвердить✅', 'Растау✅']
 listChooseNominal = ['Выберите сумму номинала:', 'Номинал сомасын таңдаңыз:']
-listIINno = ['Вас нету в базе данных или не подходите по условию(ученик образовательного учереждения от 5 до 17 лет)!!!',
-             'Сіз деректер базасында жоқсыз немесе шарт бойынша сәйкес келмейсіз(5 жастан 17 жасқа дейінгі білім беру мекемесінің оқушысы)!!!']
+listIINno = ['Ваши данные не найдены в базе данных, возможно возраст Ваших детей не соответствует условию (ученик образовательного учереждения от 5 до 17 лет)!',
+             'Сіздің деректер базада табылмады , Сіздің балаларыныңыз шарт бойынша сәйкес келмеуі мүмкін (5 жастан 17 жасқа дейінгі білім беру мекемесінің оқушысы)!']
 listProdolzhit = ['Далее', 'Әрі қарай']
 listVybrali = ['Вы выбрали:', 'Сіз таңдадыңыз:']
 listDengiRazmer = ['Денежную компенсацию в размере: ',
@@ -1869,9 +1979,10 @@ listCountKol = ['Выберите количество', 'Санын таңда�
 listVashaSumma = ['Ваша сумма: ', 'Сіздің сомаңыз: ']
 listOstatok = ['Остаток: ', 'Қалдығы: ']
 listTagyKosu = ['🔙 Добавить еще', '🔙 Тағы қосу']
-listVybrana = ['Сумма полностью не выбрана!!! Выберите еще сертификаты на сумму ','Сома толығымен таңдалмаған!!! Тағы сертификаттарды таңдаңыз ']
+listVybrana = ['Сумма полностью не выбрана! Выберите еще сертификаты на сумму ','Сома толығымен таңдалмаған! Тағы сертификаттарды таңдаңыз ']
 listOpros = ['По подтвержденным данным  пройдите опрос','Расталған деректер бойынша сауалнамадан өтіңіз']
 listYouTube = ['https://youtu.be/WlIOcnXNw40','https://www.youtube.com/watch?v=IW7fmwgf_XI']
+listBankDer= ['Держателем какой карты вы являетесь?','Сіз қандай карта ұстаушысыз?']
 try:
     bot.infinity_polling(timeout=10, long_polling_timeout=5)
 except:
