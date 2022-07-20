@@ -17,7 +17,7 @@ from yaml import parse
 from conversiontools import ConversionClient
 
 
-token = '5530094141:AAENzXi4uAPkoFqZu_4Tgv37qwyGituhq8w'
+token = '5512229550:AAF9qGoRFPa3ukPqxTgbbbJb4dR_NJtAEeE'
 bot = telebot.TeleBot(token)
 
 langNumber1 = [0]
