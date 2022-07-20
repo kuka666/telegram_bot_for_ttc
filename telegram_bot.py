@@ -397,7 +397,7 @@ def callbackLang(call):
                         call.from_user.id, call.message.message_id, reply_markup=None)
                     bot.delete_message(call.message.chat.id,
                                        call.message.message_id)
-                    get_bank(call.message)
+                    get_cart(call.message)
                 elif call.data == 'n':
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None)
@@ -420,7 +420,7 @@ def callbackLang(call):
                         call.from_user.id, call.message.message_id, reply_markup=None)
                     bot.delete_message(call.message.chat.id,
                                        call.message.message_id)
-                    get_bank(call.message)
+                    get_cart(call.message)
                 elif call.data == 'j':
                     bot.edit_message_reply_markup(
                         call.from_user.id, call.message.message_id, reply_markup=None)
@@ -507,8 +507,6 @@ def callbackLang(call):
                                 get_sogl(call.message)
                                 bot.delete_message(call.message.chat.id,
                                         call.message.message_id)
-                                bot.edit_message_reply_markup(
-                                    call.from_user.id, call.message.message_id, reply_markup=None)
                             else:
                                 bot.send_message(
                                     call.message.chat.id, listVybrana[langNumber1[0]] + user_data['balans'])
@@ -1823,7 +1821,17 @@ def get_info_only_exists(message):
             string =  string + sport + mechta + lcwaikiki + abdi + dengi +"\n\nИтого: " + all + "тг"
             return string
 
-
+def get_birthday(message):
+    with open('result.json', encoding='utf-8') as file:
+        data = json.load(file)
+    for i in data:
+        if(i['id']==str(message.chat.id)):
+            birthday = i['iin']
+            if(int(birthday[0])==0):
+                birthday = birthday[4] + birthday[5] + '.' + birthday[2]+ birthday[3] + '.20' + birthday[0]+ birthday[1]
+            else:
+                birthday = birthday[4] + birthday[5] + '.' + birthday[2]+ birthday[3] + '.19' + birthday[0]+ birthday[1]
+            return birthday
 def get_saved_person_for_excel(message,counts):
     with open('result.json', encoding='utf-8') as file:
         result_json = json.load(file)
@@ -1833,8 +1841,8 @@ def get_saved_person_for_excel(message,counts):
                 'Филиал': i['filial'],
                 'ФИО Сотрудника': i['fio'],
                 'ИИН Сотрудника': i['iin'],
-                'Банк': i['cart_type'],
                 'Число детей': i['count_deti'],
+                'Дата рождения': get_birthday(message),
                 'Информация о Ребенке': i['comment'],
                 'Денежная компенсация': i['dengi'],
                 'Спортмастер сертификаты': counts['sportmaster_count'],

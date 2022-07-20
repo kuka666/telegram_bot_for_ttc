@@ -515,10 +515,17 @@ kuka = []
 #     file.write(json.dumps(data, ensure_ascii=False))
 
 with open('result.json', encoding='utf-8') as file:
-        data = json.load(file)
-for i in data:
-    if(i['id']=="445277169"):
-        i['id'] = "4564"
-with open('result.json', "w", encoding='utf8') as f:
-    f.write(json.dumps(data, ensure_ascii=False))
+    data = json.load(file)
+# for i in data:
+#     if(i['id']=="445277169"):
+#         i['id'] = "4564"
+# with open('result.json', "w", encoding='utf8') as f:
+#     f.write(json.dumps(data, ensure_ascii=False))
 
+
+birthday = '901113400547'
+if(int(birthday[0])==0):
+    birthday = birthday[4] + birthday[5] + '.' + birthday[2]+ birthday[3] + '.20' + birthday[0]+ birthday[1]
+else:
+    birthday = birthday[4] + birthday[5] + '.' + birthday[2]+ birthday[3] + '.19' + birthday[0]+ birthday[1]
+print(birthday)
